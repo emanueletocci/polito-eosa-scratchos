@@ -12,8 +12,10 @@
  * pattern used here comes back, repeated many times instead of once,
  * in week 5's context switch.
  *
- * WEEK 3 will extend the vector table with the SysTick and UART/GPIO
- * interrupt entries this file deliberately leaves at 0 for now.
+ * WEEK 3 extended this vector table with the SysTick core-exception
+ * entry and the UART0-TX external-interrupt entry (src/main.c has both
+ * handlers). External interrupts start at index 16 (after the 16 core
+ * exception entries) - see live-coding-guides/week-03.md.
  */
 
 #include <stdint.h>
@@ -23,10 +25,12 @@ extern uint32_t _sidata, _sdata, _edata; /* .data load/run addresses */
 extern uint32_t _sbss, _ebss;            /* .bss run addresses */
 
 extern int main( void );
+extern void SysTick_Handler( void );  /* src/main.c */
+extern void UART0TX_Handler( void );  /* src/main.c */
 
 /* Every unhandled exception/interrupt lands here instead of jumping to
  * garbage. A real handler for a given vector replaces this entry in the
- * table below once that topic is covered (SysTick and UART in week 3). */
+ * table below once that topic is covered. */
 void Default_Handler( void )
 {
     for( ;; )
@@ -75,8 +79,11 @@ void Reset_Handler_C( void )
     }
 }
 
-/* ARMv7-M requires at least these 16 entries. Peripheral interrupt
- * entries are added in week 3 once there's a handler to point them at. */
+/* ARMv7-M requires at least the first 16 entries (core exceptions).
+ * From index 16 on, these are external (peripheral) interrupts, in the
+ * order the MPS2/CMSDK board defines them - we only need index 17
+ * (UART0 TX) so far; index 16 (UART0 RX) is a placeholder until a
+ * future week needs it. */
 __attribute__( ( section( ".isr_vector" ) ) )
 void ( * const isr_vector[] )( void ) =
 {
@@ -92,5 +99,7 @@ void ( * const isr_vector[] )( void ) =
     Default_Handler,            /* DebugMonitor */
     0,                          /* reserved */
     Default_Handler,            /* PendSV */
-    Default_Handler,            /* SysTick */
+    SysTick_Handler,            /* SysTick */
+    Default_Handler,            /* IRQ0:  UART0 RX (unused so far) */
+    UART0TX_Handler,            /* IRQ1:  UART0 TX */
 };
