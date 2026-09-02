@@ -8,14 +8,14 @@ that week's own lecture content. This is the last lab against
 ## Starting point
 
 ```sh
-git checkout week-07-end
+cd week-07
 ```
 
 ## Task
 
 Working alone:
 
-1. Rebuild and reboot `week-07-end`; run it long enough to convince
+1. Rebuild and reboot `week-07/`; run it long enough to convince
    yourself the UART output stays clean.
 2. Temporarily remove the `spinlock_acquire`/`spinlock_release` calls
    from `uart_write_polled` and reproduce the interleaving bug yourself

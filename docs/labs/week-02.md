@@ -6,7 +6,7 @@ this lab happens during week 2, before that week's lecture content.
 ## Starting point
 
 ```sh
-git checkout week-01-end
+cd week-01
 ```
 
 ## Task
@@ -14,7 +14,7 @@ git checkout week-01-end
 Working alone (ask for help if you're stuck — that's what this session
 is for):
 
-1. Build and boot `week-01-end` exactly as shown in class:
+1. Build and boot `week-01/` exactly as shown in class:
    ```sh
    make run
    ```

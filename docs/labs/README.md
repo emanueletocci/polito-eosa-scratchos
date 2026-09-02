@@ -1,8 +1,8 @@
 # Lab tasks
 
 This is where the scratch-OS pillar's weekly lab task descriptions live —
-not in `course-material`, since every lab is tied to a specific checkpoint
-tag in this same repository (see
+not in `course-material`, since every lab is tied to a specific week's
+folder in this same repository (see
 [`../checkpoint-tags.md`](../checkpoint-tags.md)). This satisfies the
 `course-repository-structure` requirement that scratch-OS lab tasks live
 inside `scratch-os` itself.
@@ -13,15 +13,14 @@ inside `scratch-os` itself.
   week NN (which, per the lab-lag rule, covers week NN-1's lecture
   topic).
 - Each lab doc SHALL state:
-  - **Starting point**: the checkpoint tag the student checks out before
-    starting (`week-(NN-1)-end`).
+  - **Starting point**: the week folder to open before starting
+    (`week-(NN-1)/`).
   - **Task**: what to build, as a variation or extension of that week's
     live-coding target — not a reproduction of it.
   - **Done looks like**: an observable, checkable outcome (e.g. "the
     console prints X," "task Y runs every N ticks," "the race is no
     longer reproducible after 100 runs").
-- No reference solution is authored (a deliberate choice — see
-  `openspec/changes/author-scratch-os-content/design.md`). If that
+- No reference solution is authored (a deliberate choice). If that
   changes for a specific week, the solution lives alongside the task
   description in the same file, clearly separated.
 - Full visibility applies here too: lab docs for weeks not yet reached in

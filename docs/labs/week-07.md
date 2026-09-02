@@ -7,11 +7,11 @@ schedulability analysis, on paper.
 
 ## Starting point
 
-Still `week-05-end` — nothing changed in week 6, so there's no newer
-checkpoint to start from.
+Still `week-05/` — nothing changed in week 6, so there's no newer
+folder to start from.
 
 ```sh
-git checkout week-05-end
+cd week-05
 ```
 
 ## Task
@@ -41,7 +41,7 @@ fine):
    time instead of a fixed period). Does your EDF schedulability
    argument from step 1 still hold? Why or why not?
 
-4. Looking at `scratch-os`'s actual `week-05-end` dispatcher: which of
+4. Looking at `scratch-os`'s actual `week-05/` dispatcher: which of
    RMS, EDF, or "none of the above" best describes what it implements?
    Justify your answer using the vocabulary from this week's slides.
 

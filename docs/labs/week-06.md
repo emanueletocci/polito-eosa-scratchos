@@ -7,14 +7,14 @@ lecture content.
 ## Starting point
 
 ```sh
-git checkout week-05-end
+cd week-05
 ```
 
 ## Task
 
 Working alone:
 
-1. Rebuild and reboot `week-05-end`; confirm `task0`/`task1`/`task2`
+1. Rebuild and reboot `week-05/`; confirm `task0`/`task1`/`task2`
    cycle.
 2. Add a 4th task. You'll need to: add a 4th partition to
    `scripts/mps2_m3.ld`, bump `TASK_COUNT`, write `task3_entry`, add its

@@ -6,14 +6,14 @@ lab happens during week 3, before that week's lecture content.
 ## Starting point
 
 ```sh
-git checkout week-02-end
+cd week-02
 ```
 
 ## Task
 
 Working alone:
 
-1. Rebuild and reboot `week-02-end`, confirm it still prints correctly.
+1. Rebuild and reboot `week-02/`, confirm it still prints correctly.
 2. Read `boot/startup.c` without looking at your notes from class. Before
    touching anything, write down (a comment at the top of the file is
    fine) what each of these does, in your own words:

@@ -7,14 +7,14 @@ content.
 ## Starting point
 
 ```sh
-git checkout week-04-end
+cd week-04
 ```
 
 ## Task
 
 Working alone:
 
-1. Rebuild and reboot `week-04-end`; confirm `partitions OK` prints.
+1. Rebuild and reboot `week-04/`; confirm `partitions OK` prints.
 2. Change `TASK_COUNT`/the partition list in `scripts/mps2_m3.ld` to 5
    tasks instead of 3, and update `src/main.c`'s `extern` declarations
    and `check_partition_isolation` to match. Confirm it still reports

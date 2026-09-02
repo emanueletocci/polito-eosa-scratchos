@@ -6,14 +6,14 @@ lab happens during week 4, before that week's lecture content.
 ## Starting point
 
 ```sh
-git checkout week-03-end
+cd week-03
 ```
 
 ## Task
 
 Working alone:
 
-1. Rebuild and reboot `week-03-end`; confirm `polled OK`, `interrupt OK`,
+1. Rebuild and reboot `week-03/`; confirm `polled OK`, `interrupt OK`,
    then repeating `tick` lines.
 2. Add interrupt-driven UART **receive**: enable UART0 RX (`RXEN`,
    `RXIRQEN` in `CTRL`, and IRQ0 — `UARTRX0_IRQn` — in the NVIC), write
