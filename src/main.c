@@ -4,8 +4,8 @@
  *
  * Contact: Stefano Di Carlo <stefano.dicarlo@polito.it>
  *
- * Week 5 checkpoint: a tick-driven cyclic-executive scheduler, on top of
- * week 3's interrupts/IO and week 4's memory partitions.
+ * Week 7 checkpoint: synchronization, on top of weeks 3-5's IO,
+ * partitions, and scheduler.
  *  - polled UART write (busy-wait on the TX-buffer-full flag)
  *  - interrupt-driven UART write (TX-empty interrupt sends the rest of
  *    a message one character at a time)
@@ -14,12 +14,13 @@
  *    private stacks
  *  - three tasks, round-robin dispatched every SysTick tick, each with
  *    its own stack and its own saved register context
+ *  - a spinlock (ldrex/strex atomic test-and-set) protecting the UART
+ *    from exactly the interleaving race week 5 observed for real
  *
  * main() no longer runs at all after setup - it hands off to task0 and
- * never returns. SysTick_Handler does the actual context switch: this
- * week's second just-in-time assembly dose (see live-coding-guides/
- * week-05.md), reusing exactly the ldr/mov-into-SP skill from week 2,
- * just executed on every tick instead of once at boot.
+ * never returns. SysTick_Handler does the actual context switch: week
+ * 5's second just-in-time assembly dose, reusing exactly the
+ * ldr/mov-into-SP skill from week 2.
  */
 
 #include <stdint.h>
@@ -31,9 +32,46 @@ static void uart_init( void )
     CMSDK_UART0->CTRL = UART_CTRL_TXEN;
 }
 
-/* Polled: busy-wait for room in the TX buffer before every character. */
+/* ---- Spinlock: atomic test-and-set via ldrex/strex ---- */
+
+typedef struct
+{
+    volatile uint32_t locked;
+} spinlock_t;
+
+static spinlock_t uart_lock;
+
+static void spinlock_acquire( spinlock_t *lock )
+{
+    uint32_t old, fail;
+    do
+    {
+        __asm__ volatile ( "ldrex %0, [%1]" : "=&r" ( old ) : "r" ( &lock->locked ) );
+        if( old != 0 )
+        {
+            continue; /* already held - keep spinning */
+        }
+        __asm__ volatile ( "strex %0, %2, [%1]"
+                            : "=&r" ( fail )
+                            : "r" ( &lock->locked ), "r" ( 1U )
+                            : "memory" );
+    }
+    while( old != 0 || fail != 0 ); /* fail != 0: another core/exception won the race - retry */
+}
+
+static void spinlock_release( spinlock_t *lock )
+{
+    __asm__ volatile ( "dmb" ::: "memory" ); /* ensure prior writes are visible before unlocking */
+    lock->locked = 0;
+}
+
+/* Polled: busy-wait for room in the TX buffer before every character.
+ * Locked because three tasks share this one UART - see week-05-end's
+ * commit message for the real interleaving this fixes. */
 static void uart_write_polled( const char *message )
 {
+    spinlock_acquire( &uart_lock );
+
     while( *message )
     {
         while( CMSDK_UART0->STATE & UART_STATE_TXBF )
@@ -41,6 +79,8 @@ static void uart_write_polled( const char *message )
         }
         CMSDK_UART0->DATA = (uint32_t) *message++;
     }
+
+    spinlock_release( &uart_lock );
 }
 
 /* Interrupt-driven: prime the first character by hand, then the TX-empty
