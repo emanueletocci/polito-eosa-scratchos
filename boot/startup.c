@@ -6,9 +6,11 @@
  *
  * Minimal ARM Cortex-M3 boot code: vector table + reset handler.
  *
- * WEEK 1: this file is given as-is. We build it ourselves, by hand,
- * in week 2 - see live-coding-guides/week-02.md. Only enough is here
- * to prove the toolchain pipeline works end to end.
+ * Reset_Handler is deliberately split into a naked asm stub (explicit
+ * stack-pointer setup) and a plain C continuation - see
+ * live-coding-guides/week-02.md for why. The same ldr/mov-into-SP
+ * pattern used here comes back, repeated many times instead of once,
+ * in week 5's context switch.
  *
  * WEEK 3 will extend the vector table with the SysTick and UART/GPIO
  * interrupt entries this file deliberately leaves at 0 for now.
@@ -32,7 +34,22 @@ void Default_Handler( void )
     }
 }
 
+/* Explicit stack-pointer setup, in assembly, before any C code runs.
+ * On Cortex-M this is technically redundant - hardware already loaded
+ * SP from isr_vector[0] before this function's own code starts - but
+ * taking control of it explicitly here is the same skill week 5's
+ * context switch needs, where SP genuinely does need to move at
+ * runtime. `naked` means no compiler-generated prologue/epilogue, so
+ * we control every instruction that runs before SP is set. */
+__attribute__( ( naked ) )
 void Reset_Handler( void )
+{
+    __asm volatile ( "ldr r0, =_estack" );
+    __asm volatile ( "mov sp, r0" );
+    __asm volatile ( "bl Reset_Handler_C" );
+}
+
+void Reset_Handler_C( void )
 {
     /* Copy .data's initial values from flash to RAM. */
     uint32_t *src = &_sidata;
