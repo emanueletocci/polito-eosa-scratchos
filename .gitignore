@@ -48,3 +48,8 @@ CLAUDE.md
 node_modules/
 __pycache__/
 *.pyc
+
+# ==============================
+# Build output
+# ==============================
+build/

@@ -17,8 +17,18 @@ Code in this repository is licensed under the [MIT License](LICENSE).
 Every source file carries a header per
 [`code-header-template.md`](../course-material/docs/code-header-template.md).
 
+## Building and running
+
+```sh
+make          # build build/scratch-os.axf
+make run      # build, then boot it in QEMU
+```
+
+Requires the toolchain — see
+[`environment-setup.md`](../course-material/docs/environment-setup.md).
+
 ## Status
 
-Foundational scaffolding only — the actual weekly content (topic
-sequencing, boot code, task implementations) is authored in a follow-up
-change once the course's 13-topic sequence is decided.
+Weeks 1-7 (the scratch-OS half of the course) are being authored — see
+`openspec/changes/author-scratch-os-content` for progress. Weeks 8-13
+are FreeRTOS territory (`freertos-labs`), not this repo.
