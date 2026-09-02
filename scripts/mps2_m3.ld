@@ -8,9 +8,10 @@
  * platform). Memory layout matches the board's actual FLASH/RAM
  * addresses and sizes.
  *
- * Deliberately minimal for week 1: one stack, no per-task partitions
- * (that's week 4's topic), no heap (nothing here allocates dynamically -
- * see three-pillar-curriculum's static-memory scratch-OS scope).
+ * WEEK 4 added .task_partitions: TASK_COUNT fixed-size regions, one per
+ * task, their addresses fixed at link time - not dynamically allocated
+ * (see three-pillar-curriculum's static-memory scratch-OS scope; no
+ * heap exists in this image at all, on purpose).
  */
 
 MEMORY
@@ -22,8 +23,10 @@ MEMORY
 ENTRY(Reset_Handler)
 
 _estack = ORIGIN(RAM) + LENGTH(RAM);   /* stack grows down from top of RAM */
-_Min_Stack_Size = 0x1000;              /* 4KB - plenty for week 1's single stack */
-_Min_Heap_Size = 0x1000;               /* 4KB - only newlib's internal stdio buffering needs this in week 1 */
+_Min_Stack_Size = 0x1000;              /* 4KB - the boot stack (not a task's own stack yet - that's week 5) */
+
+TASK_COUNT = 3;
+TASK_PARTITION_SIZE = 512; /* bytes reserved per task, fixed at link time */
 
 SECTIONS
 {
@@ -64,16 +67,21 @@ SECTIONS
         _ebss = .;
     } > RAM
 
-    .heap :
+    /* One fixed-size, fixed-address region per task. Named per-task
+     * symbols (_task0_partition_start/_end, _task1_..., _task2_...)
+     * rather than a single array, so each task's boundary is visible
+     * and checkable on its own - not just "somewhere in a shared
+     * region." NOLOAD: reserved RAM, no image content to load here. */
+    .task_partitions (NOLOAD) :
     {
         . = ALIGN(8);
-        PROVIDE( end = . );
-        PROVIDE( _end = . );
-        _heap_bottom = .;
-        . = . + _Min_Heap_Size;
-        _heap_top = .;
+        _task_partitions_start = .;
+        _task0_partition_start = .; . += TASK_PARTITION_SIZE; _task0_partition_end = .;
+        _task1_partition_start = .; . += TASK_PARTITION_SIZE; _task1_partition_end = .;
+        _task2_partition_start = .; . += TASK_PARTITION_SIZE; _task2_partition_end = .;
+        _task_partitions_end = .;
     } > RAM
 
     __StackLimit = _estack - _Min_Stack_Size;
-    ASSERT(__StackLimit >= _heap_top, "region RAM overflowed: heap collides with the stack")
+    ASSERT(__StackLimit >= _task_partitions_end, "region RAM overflowed: task partitions collide with the stack")
 }

@@ -4,12 +4,16 @@
  *
  * Contact: Stefano Di Carlo <stefano.dicarlo@polito.it>
  *
- * Week 3 checkpoint: interrupts and IO.
+ * Week 4 checkpoint: static per-task memory partitioning, on top of
+ * week 3's interrupts and IO.
  *  - polled UART write (busy-wait on the TX-buffer-full flag)
  *  - interrupt-driven UART write (TX-empty interrupt sends the rest of
  *    a message one character at a time)
  *  - a periodic SysTick interrupt, counted and reported over the polled
  *    UART path
+ *  - three fixed-address, fixed-size memory partitions (mps2_m3.ld),
+ *    proven isolated from each other by filling each with a distinct
+ *    byte pattern and checking none bled into its neighbor
  *
  * main() is no longer "run once and stop" - it becomes the idle loop
  * that everything else (week 5 onward) replaces with real scheduling.
@@ -84,12 +88,57 @@ static void systick_init( void )
     SysTick->CTRL = SysTick_CTRL_ENABLE | SysTick_CTRL_TICKINT | SysTick_CTRL_CLKSOURCE;
 }
 
+/* Three fixed regions, fixed addresses, sized and placed entirely at
+ * link time - see mps2_m3.ld's .task_partitions. No allocation, no
+ * runtime layout decisions: exactly the static-memory scope scratch-OS
+ * stays within (three-pillar-curriculum). */
+extern uint8_t _task0_partition_start[], _task0_partition_end[];
+extern uint8_t _task1_partition_start[], _task1_partition_end[];
+extern uint8_t _task2_partition_start[], _task2_partition_end[];
+
+static void fill_partition( uint8_t *start, uint8_t *end, uint8_t pattern )
+{
+    for( uint8_t *p = start; p < end; p++ )
+    {
+        *p = pattern;
+    }
+}
+
+static int partition_is( const uint8_t *start, const uint8_t *end, uint8_t pattern )
+{
+    for( const uint8_t *p = start; p < end; p++ )
+    {
+        if( *p != pattern )
+        {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+/* Fill each task's partition with a distinct pattern, then check every
+ * partition still holds only its own pattern - proof that writing one
+ * task's region can't touch another's. */
+static void check_partition_isolation( void )
+{
+    fill_partition( _task0_partition_start, _task0_partition_end, 0xAA );
+    fill_partition( _task1_partition_start, _task1_partition_end, 0xBB );
+    fill_partition( _task2_partition_start, _task2_partition_end, 0xCC );
+
+    int ok = partition_is( _task0_partition_start, _task0_partition_end, 0xAA )
+             && partition_is( _task1_partition_start, _task1_partition_end, 0xBB )
+             && partition_is( _task2_partition_start, _task2_partition_end, 0xCC );
+
+    uart_write_polled( ok ? "partitions OK\n" : "partitions FAILED\n" );
+}
+
 int main( void )
 {
     uart_init();
 
     uart_write_polled( "polled OK\n" );
     uart_write_interrupt_driven( "interrupt OK\n" );
+    check_partition_isolation();
 
     systick_init();
 
