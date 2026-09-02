@@ -43,9 +43,3 @@ Each folder is a complete, standalone snapshot — `cd week-04 && make run`
 works on its own. See [`docs/checkpoint-tags.md`](docs/checkpoint-tags.md)
 for the folder convention and [`docs/labs/`](docs/labs/) for each week's
 lab task.
-
-## Status
-
-Weeks 1-7 (the scratch-OS half of the course) are complete. Weeks 8-13
-are FreeRTOS territory (`freertos-labs`), not this repo, and not yet
-sequenced.
