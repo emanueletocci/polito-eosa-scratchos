@@ -1,7 +1,7 @@
 # scratch-os
 
 The cumulative, from-scratch flat operating system you build across the
-Embedded Operating Systems course. Boot → running static tasks, on
+Embedded Operating Systems and Architecture course. Boot → running static tasks, on
 QEMU's `mps2-an385` (ARM Cortex-M3) machine model. Static memory, static
 tasks — no dynamic allocation, no virtual memory (that's what the
 `freertos-labs` pillar is for).
