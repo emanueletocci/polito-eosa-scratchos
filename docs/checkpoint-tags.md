@@ -17,9 +17,8 @@ resetting anything.
   this repository's `README.md`, `LICENSE`, `.gitignore` — stays at the
   repository root, not duplicated into every folder.
 - **No branch protection, no hidden folders.** Every week's folder and
-  the full commit history remain visible at all times (see
-  `course-repository-structure` policy) — there is no separate
-  "solutions" repo or gated branch.
+  the full commit history remain visible at all times — there is no
+  separate "solutions" repo or gated branch.
 
 ## Using a checkpoint
 
