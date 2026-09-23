@@ -32,10 +32,37 @@ static void semihost_write0( const char *message )
     register uint32_t r0 __asm__( "r0" ) = 0x04;
     /* The pointer to the string must be in r1 for SYS_WRITE0. */
     register const char *r1 __asm__( "r1" ) = message;
-    /* `bkpt 0xab` is the Thumb semihosting trap: QEMU sees it, reads r0
-     * and r1, writes the string to its console, and resumes. "memory"
-     * tells the compiler this may read arbitrary memory (the string),
-     * so it must not reorder earlier writes past this point. */
+
+    /* bkpt is an ARM instruction that halts the CPU's normal execution
+     * and enters Debug state - normally used so an external debugger
+     * (GDB, Keil MDK, ...) can inspect registers and memory. Its
+     * immediate operand (here 0xab) is just a tag a debugger can use to
+     * tell one breakpoint from another; it carries no meaning to the
+     * hardware itself.
+     *
+     * Semihosting repurposes that trap: instead of just stopping, the
+     * debugger (here QEMU, acting as the debug host) recognizes 0xab,
+     * reads the request number from r0 and its argument from r1, performs
+     * the requested operation on the host machine, then resumes the
+     * target. "semi" (half) + "hosting" - part of the task (deciding
+     * what to print) runs on the target CPU, the other half (actually
+     * writing to a console or file) runs on the host. It lets a board
+     * with no UART or SD card still print messages or read/write files
+     * during debugging.
+     *
+     * Reading the line: `__asm__` embeds raw assembly in C; `volatile`
+     * tells the compiler not to delete or reorder this instruction even
+     * though it has no C-visible result. The three fields after the
+     * instruction string are, in order:
+     *   - outputs (before the first colon): none here.
+     *   - inputs (before the second colon): "r"(r0), "r"(r1) - place the
+     *     C variables r0 and r1 into (any) registers before this
+     *     instruction runs, which is what actually pins them to the
+     *     physical r0/r1 the `register` declarations above requested.
+     *   - clobbers (after the second colon): "memory" - warns the
+     *     compiler this instruction may read memory it can't see
+     *     (the string), so it must not move earlier memory writes to
+     *     after this point. */
     __asm__ volatile ( "bkpt 0xab" : : "r"( r0 ), "r"( r1 ) : "memory" );
 }
 
