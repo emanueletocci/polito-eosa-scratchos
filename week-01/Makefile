@@ -17,8 +17,11 @@ OBJECTS := $(SOURCES:%.c=$(BUILD_DIR)/%.o)
 
 # -mthumb / -mcpu: target the Cortex-M3's Thumb instruction set.
 # -nostartfiles: no default C startup code - boot/startup.c is ours.
+# -ffreestanding: no hosted C runtime/libc to rely on (also what makes
+# the compiler's freestanding <stdint.h> resolve instead of looking for
+# a hosted one that toolchain installs without a bundled newlib lack).
 # -std=gnu17: C17 plus GNU extensions (used by the inline-asm blocks).
-CFLAGS := -mthumb -mcpu=cortex-m3 -nostartfiles -std=gnu17
+CFLAGS := -mthumb -mcpu=cortex-m3 -nostartfiles -ffreestanding -std=gnu17
 # Enable the standard and extra warning sets.
 CFLAGS += -Wall -Wextra
 # -O0 + full debug info: keep generated code close to the source so it
@@ -33,6 +36,11 @@ CFLAGS += -O0 -g3
 LDFLAGS := -T scripts/mps2_m3.ld
 # Also emit a map file showing which symbol landed at which address.
 LDFLAGS += -Xlinker -Map=$(BUILD_DIR)/output.map
+# -nostdlib: don't link against a hosted libc/startup - toolchain
+# installs without a bundled newlib (e.g. plain Homebrew/apt packages)
+# don't have one to link anyway. -lgcc still pulls in libgcc's software
+# helpers (e.g. integer division) that the compiler itself may emit.
+LDFLAGS += -nostdlib -lgcc
 
 # These targets are command names, not files on disk.
 .PHONY: all clean run
