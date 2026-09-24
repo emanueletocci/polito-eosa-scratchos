@@ -17,8 +17,11 @@ OBJECTS := $(SOURCES:%.c=$(BUILD_DIR)/%.o)
 
 # -mthumb / -mcpu: target the Cortex-M3's Thumb instruction set.
 # -nostartfiles: no default C startup code - boot/startup.c is ours.
+# -ffreestanding: no hosted environment - no full standard library, no
+#  distinguished main. With -nostdlib below, this is what makes "no C
+#  library" true of the image rather than merely intended.
 # -std=gnu17: C17 plus GNU extensions (used by the inline-asm blocks).
-CFLAGS := -mthumb -mcpu=cortex-m3 -nostartfiles -std=gnu17
+CFLAGS := -mthumb -mcpu=cortex-m3 -nostartfiles -ffreestanding -std=gnu17
 # Enable the standard and extra warning sets.
 CFLAGS += -Wall -Wextra
 # -O0 + full debug info: keep generated code close to the source so it
@@ -33,6 +36,13 @@ CFLAGS += -O0 -g3
 LDFLAGS := -T scripts/mps2_m3.ld
 # Also emit a map file showing which symbol landed at which address.
 LDFLAGS += -Xlinker -Map=$(BUILD_DIR)/output.map
+# -nostdlib: don't link a hosted libc or its startup code. Toolchain
+# installs without a bundled newlib have none to link anyway, and without
+# this the linker still searches newlib, so a stray stdio call fails on
+# its missing syscall stubs (_write, _sbrk) instead of on the call itself.
+# -lgcc still supplies libgcc's software helpers, such as integer
+# division, that the compiler may emit on its own.
+LDFLAGS += -nostdlib -lgcc
 
 # These targets are command names, not files on disk.
 .PHONY: all clean run
