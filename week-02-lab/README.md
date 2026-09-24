@@ -59,7 +59,7 @@ cd ../week-01
 make run
 ```
 
-The image prints `toolchain OK`. Exit QEMU with `Ctrl-A`, then `X`.
+The image prints `toolchain OK`. Exit QEMU with `Ctrl-A`, then `X` (or `Ctrl-C` if you run QEMU with `-serial stdio`).
 
 > Reference: `lecture-notes/week-01.md` §7 for the role of QEMU and
 > semihosting here; `docs/environment-setup.md` if the build does not
@@ -191,8 +191,7 @@ into `starter/src/main.c`, and call it from `main`.
 Attempt first to verify it as you did in A3, with `printf`. Add the
 include, the call, and rebuild.
 
-No output appears. Not truncated output, and not incorrect output: none
-at all.
+No output, the build fails.
 
 Establish the cause before continuing. The two programs contain the same
 function, compiled for the same processor by the same compiler, and are
