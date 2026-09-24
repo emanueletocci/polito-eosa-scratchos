@@ -20,12 +20,16 @@
  * in week 2. Output goes over ARM semihosting, not real UART (week 3's
  * topic).
  *
- * This writes directly via a semihosting call instead of printf(): our
- * hand-rolled Reset_Handler doesn't perform the C-runtime init newlib's
- * semihosting-backed stdio (rdimon) expects, so routing through printf
- * silently produces no output. Direct semihosting sidesteps libc
- * entirely - appropriate for week 1, before any C-runtime topic has
- * been covered anyway.
+ * This writes directly via a semihosting call instead of printf():
+ * routing through printf fails at LINK time, not at run time. Depending
+ * on whether the link searches a C library at all, it fails either on
+ * printf itself (with -nostdlib) or on the syscall stubs newlib's stdio
+ * needs - _write, _read, _sbrk - which this image does not provide.
+ * Even had it linked, newlib's semihosting-backed stdio (rdimon) expects
+ * C-runtime init our hand-rolled Reset_Handler never performs, so
+ * supplying the library alone would not be enough. Direct semihosting
+ * sidesteps libc entirely - appropriate for week 1, before any C-runtime
+ * topic has been covered anyway.
  */
 
 /* Only uint32_t is needed here; no other header is pulled in. */
@@ -119,8 +123,8 @@ int main( void )
 
     /* lab A4: verify the exchange in C and report a fixed string. The
      * values cannot be printed: semihost_write0 accepts a NUL-terminated
-     * string, and printf produces no output whatever in this image (see
-     * this file's header comment). This follows the same "<thing> OK"
+     * string, and printf does not link in this image at all (see this
+     * file's header comment). This follows the same "<thing> OK"
      * convention as the line above. */
     {
         int x = 1, y = 2;

@@ -59,7 +59,11 @@ cd ../week-01
 make run
 ```
 
-The image prints `toolchain OK`. Exit QEMU with `Ctrl-A`, then `X` (or `Ctrl-C` if you run QEMU with `-serial stdio`).
+The image prints `toolchain OK`. Exit QEMU with `Ctrl-C`. The
+conventional `Ctrl-A` `X` does nothing here: `make run` passes
+`-monitor null -serial stdio`, which gives the serial line its own
+channel with no monitor multiplexed onto it, and it is that multiplexer
+which would otherwise interpret `Ctrl-A`.
 
 > Reference: `lecture-notes/week-01.md` §7 for the role of QEMU and
 > semihosting here; `docs/environment-setup.md` if the build does not
@@ -191,7 +195,18 @@ into `starter/src/main.c`, and call it from `main`.
 Attempt first to verify it as you did in A3, with `printf`. Add the
 include, the call, and rebuild.
 
-No output, the build fails.
+The build does not complete. It is the **link** that fails, so there is
+no image to run and therefore no output — the absence of output is a
+consequence, not the fault itself:
+
+<!-- verify: expect-failure (fixture a4-printf asserts this) -->
+
+```console
+$ make
+src/main.c:129:(.text+0x6c): undefined reference to `printf'
+collect2: error: ld returned 1 exit status
+make: *** [build/scratch-os.axf] Error 1
+```
 
 Establish the cause before continuing. The two programs contain the same
 function, compiled for the same processor by the same compiler, and are
@@ -202,11 +217,20 @@ executed by the same QEMU command. What differs is how they were
   supplies newlib's semihosting C library and its startup code, and it
   calls `initialise_monitor_handles` to establish the descriptors stdio
   writes through.
-- The firmware image is linked with `-nostartfiles` and no C library.
-  Its startup code is `boot/startup.c`, written by hand for this course.
-  `Reset_Handler` initialises `.data` and `.bss` and calls `main`; it
-  performs none of the run-time initialisation stdio requires, and
+- The firmware image is compiled `-ffreestanding` and linked with
+  `-nostartfiles -nostdlib`, so no C library is searched at all and
+  `printf` has no definition to resolve to. Its startup code is
+  `boot/startup.c`, written by hand for this course. `Reset_Handler`
+  initialises `.data` and `.bss` and calls `main`; it performs none of the
+  run-time initialisation stdio would require, and
   `initialise_monitor_handles` is not linked in to be called.
+
+  Note the order in which those two facts matter. The link failing is
+  what you observe; the missing run-time initialisation is why supplying
+  `printf` would not rescue the attempt anyway. Drop `-nostdlib` and the
+  link gets further, only to fail on the syscall stubs newlib's stdio
+  needs — `_write`, `_read`, `_sbrk` — which this image also does not
+  provide.
 
 ISO C §4 names these two cases: a **hosted** implementation provides the
 full standard library, a **freestanding** implementation does not.

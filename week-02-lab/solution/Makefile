@@ -27,7 +27,11 @@ SOURCES := boot/startup.c src/main.c
 OBJECTS := $(SOURCES:%.c=$(BUILD_DIR)/%.o)
 
 # Target policy (notes section 2).
-CFLAGS := -mthumb -mcpu=cortex-m3 -nostartfiles -std=gnu17
+# -ffreestanding: tells the compiler that a hosted environment's
+#  guarantees - a full standard C library, a distinguished main - do not
+#  hold here. Together with -nostdlib below it is what makes "no C
+#  library" true rather than merely intended.
+CFLAGS := -mthumb -mcpu=cortex-m3 -nostartfiles -ffreestanding -std=gnu17
 CFLAGS += -Wall -Wextra
 CFLAGS += -O0 -g3
 
@@ -35,6 +39,13 @@ CFLAGS += -O0 -g3
 # exercise B4 reads - without this second line, B4 has nothing to open.
 LDFLAGS := -T scripts/mps2_m3.ld
 LDFLAGS += -Xlinker -Map=$(BUILD_DIR)/output.map
+# -nostdlib: do not link a hosted libc or its startup code. Without it
+# the linker still searches newlib, so a stray printf drags in the libc
+# objects and fails on their missing syscall stubs (_write, _sbrk, ...)
+# rather than on printf itself - see exercise A4. -lgcc still supplies
+# libgcc's software helpers, such as integer division, that the compiler
+# may emit on its own. Matches ../../week-01/Makefile.
+LDFLAGS += -nostdlib -lgcc
 
 # --- Phony targets (notes section 6, "Phony targets") --------------------
 

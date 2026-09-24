@@ -150,9 +150,9 @@ contain.
 
 ### A4. Transfer it to the freestanding image
 
-The routine is copied without modification. The `printf` attempt
-produces no output at all, and the reason is neither the processor nor
-the source.
+The routine is copied without modification. The `printf` attempt fails
+to link — `undefined reference to 'printf'` — so no image is produced
+and nothing runs. The reason is neither the processor nor the source.
 
 **The two programs are the same code.** Disassembling `swap_asm` in each
 image yields identical instruction sequences, at different addresses:
@@ -171,19 +171,27 @@ command. The difference is entirely in the link.
 
 | | hosted (`hosted/swap.axf`) | freestanding (`build/scratch-os.axf`) |
 |--|--|--|
-| C library | newlib, via `--specs=rdimon.specs` | none |
+| C library | newlib, via `--specs=rdimon.specs` | none: `-nostdlib` |
 | startup code | newlib's, supplied by the specs file | `boot/startup.c`, written for this course |
 | `-nostartfiles` | absent | present |
 | stdio initialisation | `initialise_monitor_handles()` | not linked in, so not callable |
-| `printf` | writes to the terminal | produces no output |
+| `printf` | writes to the terminal | undefined at link time |
 
 ISO C §4 names these two cases: a **hosted** implementation provides the
 full standard library; a **freestanding** implementation does not.
 `scratch-os` is freestanding by design. This is precisely what the
-header comment of `../week-01/src/main.c` records — that newlib's
-semihosting stdio requires C run-time initialisation which the
-hand-written `Reset_Handler` never performs — and A3 and A4 together
+header comment of `../week-01/src/main.c` records, and A3 and A4 together
 constitute the experiment that demonstrates it.
+
+Two distinct obstacles stand between this image and `printf`, and it is
+worth keeping them apart. The one you meet is the **link**: `-nostdlib`
+means no C library is searched, so the symbol is never resolved. Behind
+it stands a second, which you would meet only if the first were removed:
+newlib's semihosting stdio expects C run-time initialisation, and
+`initialise_monitor_handles` in particular, that the hand-written
+`Reset_Handler` never performs. Supplying the library is therefore not
+sufficient either. The exercise stops at the first because that is where
+the toolchain stops.
 
 **What the standard library costs.**
 
