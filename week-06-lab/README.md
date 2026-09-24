@@ -6,6 +6,11 @@ lecture content.
 
 ## Starting point
 
+`week-05/` — this lab covers week 5's topic, so it builds on week 5's
+checkpoint, not on the `week-06/` folder its own number suggests. There
+is no `week-06/`: week 6 is theory-only and adds no code, so `week-05/`
+stays current.
+
 ```sh
 cd week-05
 ```
