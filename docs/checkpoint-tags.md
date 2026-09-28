@@ -27,6 +27,26 @@ cd week-04   # everything you need for week 4's state lives here
 make run     # build and boot it in QEMU
 ```
 
+## Lab folders are not checkpoints
+
+`week-NN-lab/` folders sit beside the checkpoints but are not part of
+this cumulative line. Specifically:
+
+- `week-NN-lab/starter/` is a **prepared** copy of an earlier
+  checkpoint, with whatever that lab asks you to write removed. It is
+  not that checkpoint.
+- `week-NN-lab/solution/` is the end state of one lab's exercises, which
+  are variations and extensions rather than a reproduction of the
+  course's own line of development. It is not cumulative, nothing
+  carries forward from it, and **no later week ever starts from it**.
+- A later week's checkpoint or lab always derives from a `week-NN/`
+  folder, never from a lab folder.
+
+A lab folder's number is the calendar week the lab runs in, so it does
+not pair with the `week-NN/` beside it — `week-04-lab/` runs in week 4
+and derives from `week-03/`. See
+[`labs/README.md`](labs/README.md).
+
 ## Week 1
 
 There is no `week-00` folder — `week-01/` starts from an empty/minimal

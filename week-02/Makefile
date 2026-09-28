@@ -22,11 +22,9 @@ OBJECTS := $(patsubst %.c,$(BUILD_DIR)/%.o,$(patsubst %.s,$(BUILD_DIR)/%.o,$(SOU
 
 # -mthumb / -mcpu: target the Cortex-M3's Thumb instruction set.
 # -nostartfiles: no default C startup code - boot/startup.s is ours.
-# -ffreestanding: tells GCC there is no full standard C library or
-#  operating system underneath this program (no guaranteed main(), no
-#  file system, etc). Without it, GCC assumes a hosted environment and
-#  standard headers like <stdint.h> may not even be found by toolchains
-#  that ship without newlib.
+# -ffreestanding: no hosted environment - no full standard library, no
+#  distinguished main. With -nostdlib below, this is what makes "no C
+#  library" true of the image rather than merely intended.
 # -std=gnu17: C17 plus GNU extensions (used by the inline-asm blocks).
 CFLAGS := -mthumb -mcpu=cortex-m3 -nostartfiles -ffreestanding -std=gnu17
 # Enable the standard and extra warning sets.
@@ -43,11 +41,12 @@ CFLAGS += -O0 -g3
 LDFLAGS := -T scripts/mps2_m3.ld
 # Also emit a map file showing which symbol landed at which address.
 LDFLAGS += -Xlinker -Map=$(BUILD_DIR)/output.map
-# -nostdlib: don't link against a hosted libc/startup - toolchain
-#  installs without a bundled newlib (e.g. plain Homebrew/apt packages)
-#  don't have one to link anyway, so without this flag the link step
-#  fails looking for "-lc". -lgcc still pulls in libgcc's software
-#  helpers (e.g. integer division) that the compiler itself may emit.
+# -nostdlib: don't link a hosted libc or its startup code. Toolchain
+# installs without a bundled newlib have none to link anyway, and without
+# this the linker still searches newlib, so a stray stdio call fails on
+# its missing syscall stubs (_write, _sbrk) instead of on the call itself.
+# -lgcc still supplies libgcc's software helpers, such as integer
+# division, that the compiler may emit on its own.
 LDFLAGS += -nostdlib -lgcc
 
 # These targets are command names, not files on disk.

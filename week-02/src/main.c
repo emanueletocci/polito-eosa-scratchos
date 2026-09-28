@@ -9,10 +9,14 @@
  * unprivileged mode, asks to go back through a system call (`svc`),
  * and finally pokes a privileged-only register to trigger a fault.
  *
- * It writes text directly via a semihosting call instead of printf():
- * our hand-rolled Reset_Handler doesn't perform the C-runtime init
- * that newlib's semihosting-backed stdio (rdimon) expects, so routing
- * through printf silently produces no output. Direct semihosting
+ * It writes directly via a semihosting call instead of printf():
+ * routing through printf fails at LINK time, not at run time. Depending
+ * on whether the link searches a C library at all, it fails either on
+ * printf itself (with -nostdlib) or on the syscall stubs newlib's stdio
+ * needs - _write, _read, _sbrk - which this image does not provide.
+ * Even had it linked, newlib's semihosting-backed stdio (rdimon) expects
+ * C-runtime init our hand-rolled Reset_Handler never performs, so
+ * supplying the library alone would not be enough. Direct semihosting
  * sidesteps libc entirely, which this freestanding build does not
  * link against anyway.
  */

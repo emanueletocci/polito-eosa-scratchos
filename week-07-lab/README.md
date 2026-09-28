@@ -7,8 +7,9 @@ schedulability analysis, on paper.
 
 ## Starting point
 
-Still `week-05/` — nothing changed in week 6, so there's no newer
-folder to start from.
+Still `week-05/` — week 6 is theory-only and adds no code, so there is
+no `week-06/` folder and no newer checkpoint to start from. This is the
+second lab in a row to build on `week-05/`.
 
 ```sh
 cd week-05
