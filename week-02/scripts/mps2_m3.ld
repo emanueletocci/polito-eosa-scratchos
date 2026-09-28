@@ -8,9 +8,8 @@
  * platform). Memory layout matches the board's actual FLASH/RAM
  * addresses and sizes.
  *
- * Deliberately minimal for week 1: one stack, no per-task partitions
- * (that's week 4's topic), no heap (nothing here allocates dynamically -
- * see three-pillar-curriculum's static-memory scratch-OS scope).
+ * Simple memory layout: one stack, no per-task partitions, no heap
+ * (this course uses static memory only - nothing allocates dynamically).
  */
 
 /* Physical memory regions of the board, with their access attributes.
@@ -69,17 +68,17 @@ SECTIONS
         . = ALIGN(4);           /* word-align the start of .bss */
         _sbss = .;              /* start of .bss - Reset_Handler zeroes from here */
         *(.bss*)                /* every zero-initialized input section */
-        *(COMMON)               /* legacy tentative-definition symbols */
+        *(COMMON)               /* global variables declared without a value (e.g. `int counter;`) that some compilers put in a "common" pool - they belong in .bss too */
         . = ALIGN(4);           /* word-align the end */
         _ebss = .;              /* end of .bss - zero loop stops here */
     } > RAM
 
     /* Heap region: reserved so the overflow check below is meaningful,
-     * even though week 1's code never calls malloc. */
+     * even though this code never calls malloc. */
     .heap :
     {
-        . = ALIGN(8);          /* malloc alignment on this ABI is 8 */
-        PROVIDE( end = . );     /* `end`/`_end`: the symbol newlib's sbrk uses as the heap base */
+        . = ALIGN(8);          /* align to 8 bytes (standard for memory allocation) */
+        PROVIDE( end = . );     /* `end` symbol: marks where the heap starts */
         PROVIDE( _end = . );    /* same address under the alternate spelling */
         _heap_bottom = .;      /* record the heap's low address */
         . = . + _Min_Heap_Size; /* advance the location counter to reserve the heap span */
