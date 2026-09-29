@@ -32,17 +32,19 @@ Requires the toolchain — see
 | Folder | What it adds |
 |---|---|
 | `week-01/` | Toolchain pipeline proof (boot → semihosting write) |
-| `week-02/` | Boot code written in pure assembly (`boot/startup.s`: vector table, reset handler, CPU setup), fault and SVC handlers, and a privileged → unprivileged demo |
+| `week-02/solution/` | Boot code written in pure assembly (`boot/startup.s`: vector table, reset handler, CPU setup), fault and SVC handlers, and a privileged → unprivileged demo |
 | `week-03/` | SysTick + polled/interrupt-driven UART; `main()` becomes the idle loop |
 | `week-04/` | Static per-task memory partitions (`mps2_m3.ld`), isolation verified at runtime |
 | `week-05/` | Tick-driven cyclic-executive scheduler (3 tasks, hand-written context switch) |
 | *(none)* | Week 6 is theory-only (EDF/aperiodic/mixed/predictability) — `week-05/` stays current |
 | `week-07/` | Spinlock (`ldrex`/`strex`), fixing a real UART race observed in week 5 |
 
-**About the weekly folders:** from week 2 on, you will find two versions of each `week-NN/` folder.
-The main `week-NN/` folder holds the complete solution that we build together in class.
-You can also look at `week-NN/base/`, which contains the starting code where the live coding begins — each has its own Makefile and builds independently.
-The `base/README.md` explains how that starting code was prepared so you can understand the foundation before we expand it.
+**About the weekly folders:** from week 2 on, each `week-NN/` folder holds
+two folders, `base/` and `solution/`. `base/` is the starting code the live
+coding begins from, and `solution/` is the complete solution built in class.
+Each has its own Makefile and builds on its own. `base/README.md` explains
+how the starting code was prepared, so you can understand the foundation
+before it is expanded in class.
 
 Each folder is a complete, standalone snapshot — `cd week-04 && make run`
 works on its own. See [`docs/checkpoint-tags.md`](docs/checkpoint-tags.md)

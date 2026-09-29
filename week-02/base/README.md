@@ -36,6 +36,8 @@ one piece at a time, in `boot/startup.s`.
 
 ## What you write on top of it in class
 
+The files here are kept short on purpose. Each spot where class code goes is marked with a comment that starts with `CLASS:`, and the slides tell you which marker to replace with which snippet. For the full line-by-line explanations, open the same file in `../solution/`.
+
 In this order:
 
 1. Set the stack pointer yourself.
@@ -84,4 +86,5 @@ inside GDB:
 target remote :1234
 ```
 
-The full, finished solution is in the parent folder, `week-02/`.
+The full, finished solution is in the sibling folder, `../solution/`
+(`week-02/solution/`).

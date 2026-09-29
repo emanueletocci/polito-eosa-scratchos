@@ -13,6 +13,11 @@ resetting anything.
   week's course-authored code (`boot/`, `src/`, `scripts/`, `include/`
   where applicable, and its own `Makefile`) — it builds and runs on its
   own, without depending on any other week's folder.
+- From week 2 on, a revised week's `week-NN/` folder holds two folders
+  instead of code directly: `base/`, the starting code the live coding
+  begins from, and `solution/`, the complete solution built in class.
+  Each has its own `Makefile` and builds on its own. A later week or lab
+  that builds on a revised week derives from that week's `week-NN/solution/`.
 - Shared material that doesn't change week to week — `docs/labs/`,
   this repository's `README.md`, `LICENSE`, `.gitignore` — stays at the
   repository root, not duplicated into every folder.
