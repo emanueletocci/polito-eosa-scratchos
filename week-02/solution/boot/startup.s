@@ -216,6 +216,16 @@ Reset_Handler:
      *         *dst++ = *src++;
      *     }
      */
+    ldr r0, =_sidata            /* src = &_sidata (r0 is src) */
+    ldr r1, =_sdata             /* dst = &_sdata  (r1 is dst) */
+    ldr r2, =_edata             /* r2 = &_edata, the end of the loop */
+copy_data:
+    cmp r1, r2                  /* compare dst with &_edata ... */
+    bhs copy_data_done          /* ... if dst >= &_edata, the loop is over */
+    ldr r3, [r0], #4            /* r3 = *src; src++ */
+    str r3, [r1], #4            /* *dst = r3; dst++ */
+    b copy_data                 /* go back and test the while condition */
+copy_data_done:
 
     /* -------------------------------------------------------------- */
     /* Step 4. Zero .bss.                                              */
