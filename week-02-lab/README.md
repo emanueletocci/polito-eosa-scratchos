@@ -84,7 +84,12 @@ completed file. §2 documents the compiler flags and §3 the linker flags.
 Proceed in the following order, testing after each step:
 
 1. The variables: `CC`, `BUILD_DIR`, `BIN`, `SOURCES`, `OBJECTS`,
-   `CFLAGS`, `LDFLAGS`.
+   `CFLAGS`, `LDFLAGS`. `OBJECTS` is derived from `SOURCES` by
+   substitution, and a wrong derivation does not announce itself: `make`
+   builds the wrong list without complaint. Confirm what the variables
+   actually expanded to rather than rereading the text — §6, "Making a
+   Makefile report its own state", gives `$(info …)` and a `print-%`
+   rule for exactly this.
 2. The pattern rule `$(BUILD_DIR)/%.o: %.c`. Its recipe requires
    `$(dir $@)`, `$<` and `$@`; see §6, "Automatic variables".
 3. The link rule for `$(BIN)`.
@@ -102,8 +107,10 @@ make run    # prints toolchain OK
 ```
 
 > Every recipe line must begin with a literal Tab character rather than
-> spaces. The resulting diagnostic, `missing separator`, does not
-> indicate its cause; §6 documents this.
+> spaces. The resulting diagnostic names neither whitespace nor the
+> character `make` expected; §6, "Diagnosing a delimiter error", takes
+> the message apart and gives the command that renders the offending
+> line's whitespace, since the defect cannot be seen by reading it.
 
 **Checkpoint:** `make run` prints `toolchain OK` from a `Makefile` you
 constructed.
@@ -164,6 +171,24 @@ lecture establishes them formally; treat them as provisional:
 
 Use `ldr` to load through a pointer and `str` to store through one, with
 `r2` and `r3` as scratch registers.
+
+This is the first block in this course containing more than one
+instruction, which introduces a requirement the single-instruction
+examples do not show. The instructions are C string literals, and C
+concatenates adjacent string literals — `"a" "b"` is `"ab"` — so the line
+breaks between them exist only in the C source and reach the assembler as
+nothing. Each instruction must therefore end with an explicit `\n`, as the
+supplied `"bx  lr\n"` already does. Omit it and the assembler receives one
+run-together line and reports
+
+```
+Error: garbage following instruction -- `ldr r2,[r0]ldr r3,[r1]...'
+```
+
+quoting your instructions end to end, against a temporary `.s` file rather
+than `swap.c`. `lecture-notes/week-02.md` states the rule; the treatment in
+`tutorials/arm-assembly-basics/` §4 explains why `\n\t` is the more common
+spelling.
 
 The build emits two diagnostics once the parameters are no longer
 referenced in C:
@@ -319,10 +344,14 @@ own writing and both already verified in A3: the assembly, now in
 1. Cross-compile the C implementation so that both target the
    Cortex-M3:
    ```sh
+   mkdir -p build
    arm-none-eabi-gcc -mthumb -mcpu=cortex-m3 -O0 -c \
-       hosted/swap.c -o /tmp/swap-c.o
-   arm-none-eabi-objdump -d /tmp/swap-c.o
+       hosted/swap.c -o build/swap-c.o
+   arm-none-eabi-objdump -d build/swap-c.o
    ```
+   The object file belongs in `build/`, which `make clean` removes. An
+   object left outside the tree survives a clean and a later run can read
+   a stale one without noticing.
    Both `swap_c` and `swap_asm` appear in the listing, which is
    convenient: the two are compiled side by side from one source.
 2. Disassemble the firmware image with `make disasm` and locate
@@ -330,7 +359,9 @@ own writing and both already verified in A3: the assembly, now in
 3. Compare them. Which instructions correspond? Which instructions
    appear only in the generated code, and which of those are accounted
    for by `__attribute__((naked))`?
-4. Repeat step 1 with `-Os` in place of `-O0` and compare again.
+4. Repeat step 1 with `-Os` in place of `-O0`, writing to
+   `build/swap-c-os.o` so both objects remain available, and compare
+   again.
 
 > Reference: `tutorials/binutils-and-disassembly/` §3 on reading a
 > disassembly listing, §6 on the effect of optimization level.

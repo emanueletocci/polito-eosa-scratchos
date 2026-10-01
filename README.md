@@ -39,16 +39,20 @@ Requires the toolchain — see
 | *(none)* | Week 6 is theory-only (EDF/aperiodic/mixed/predictability) — `week-05/` stays current |
 | `week-07/` | Spinlock (`ldrex`/`strex`), fixing a real UART race observed in week 5 |
 
-**About the weekly folders:** from week 2 on, each `week-NN/` folder holds
-two folders, `base/` and `solution/`. `base/` is the starting code the live
-coding begins from, and `solution/` is the complete solution built in class.
-Each has its own Makefile and builds on its own. `base/README.md` explains
-how the starting code was prepared, so you can understand the foundation
-before it is expanded in class.
+**About the weekly folders:** a revised `week-NN/` folder holds two
+folders, `base/` and `solution/`, rather than code directly. `base/` is the
+starting code the live coding begins from, and `solution/` is the complete
+solution built in class. Each has its own Makefile and builds on its own.
+`base/README.md` explains how the starting code was prepared, so you can
+understand the foundation before it is expanded in class. `week-02/` is
+organized this way; the remaining weeks still hold their code at the top of
+`week-NN/`.
 
-Each folder is a complete, standalone snapshot — `cd week-04 && make run`
-works on its own. See [`docs/checkpoint-tags.md`](docs/checkpoint-tags.md)
-for the folder convention.
+Either way, a checkpoint is a complete, standalone snapshot that builds
+where its `Makefile` is: `cd week-04 && make run` for a week that holds its
+code directly, `cd week-02/solution && make run` for a revised one. See
+[`docs/checkpoint-tags.md`](docs/checkpoint-tags.md) for the folder
+convention.
 
 ## Lab folders
 

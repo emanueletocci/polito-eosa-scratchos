@@ -9,7 +9,7 @@ the index and the format reference; the labs themselves are not here.
 | Lab | Covers | Starts from | Format |
 |:--|:--|:--|:--|
 | [`week-02-lab/`](../../week-02-lab/) | week 1 — toolchain | `week-01/` | new |
-| [`week-03-lab/`](../../week-03-lab/) | week 2 — boot | `week-02/` | moved only |
+| [`week-03-lab/`](../../week-03-lab/) | week 2 — boot | `week-02/solution/` | moved only |
 | [`week-04-lab/`](../../week-04-lab/) | week 3 — interrupts and IO | `week-03/` | moved only |
 | [`week-05-lab/`](../../week-05-lab/) | week 4 — memory | `week-04/` | moved only |
 | [`week-06-lab/`](../../week-06-lab/) | week 5 — scheduling, part 1 | `week-05/` | moved only |

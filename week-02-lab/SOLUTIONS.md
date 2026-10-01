@@ -116,6 +116,18 @@ two pointers on entry, by the calling convention, which is why the
 parameter names do not appear in the body. Registers `r2` and `r3` are
 call-clobbered and may be used without preservation.
 
+**The `\n` on every line is a requirement, not formatting.** The five
+instructions are five C string literals, and C concatenates adjacent
+string literals, so without the escapes the assembler receives the single
+line `ldr r2, [r0]ldr r3, [r1]str r3, [r0]str r2, [r1]bx  lr` and reports
+`Error: garbage following instruction`, quoting that run-together text
+against a temporary `.s` file rather than against `swap.c`. The newline
+must be inside the string, where the assembler sees it; the line breaks in
+the source are consumed by the C compiler. `solution/hosted/swap.c` carries
+`\n` on all five lines for this reason. The `\n\t` spelling seen elsewhere
+adds only indentation to the generated assembly: compiled both ways, the
+machine code is byte-identical.
+
 **The `bx lr` is a frequent omission.** `__attribute__((naked))`
 suppresses the epilogue, so no return is generated. Omitting it causes
 execution to continue past the end of the function into whatever was
@@ -323,7 +335,7 @@ Four listings of the same function follow.
 **Generated from `swap_c` at `-O0` — twenty instructions:**
 
 ```
-000001d8 <swap_c>:
+00000000 <swap_c>:
    0:	b480      	push	{r7}
    2:	b085      	sub	sp, #20
    4:	af00      	add	r7, sp, #0
@@ -361,7 +373,7 @@ listing establishes this.
 **Generated from `swap_c` at `-Os` — five instructions:**
 
 ```
-00000000 <swap>:
+00000000 <swap_c>:
    0:	6803      	ldr	r3, [r0, #0]
    2:	680a      	ldr	r2, [r1, #0]
    4:	6002      	str	r2, [r0, #0]
@@ -381,8 +393,12 @@ better code but determinate code — which is why it is applied to reset
 handlers and context switches, where the exact instruction sequence
 constitutes the requirement, and not to arithmetic.
 
-> The `-Os` listing is a separate compilation of `hosted/swap.c`. They are not the build that `solution/` contains, which
-> remains at `-O0`, as every checkpoint in this course does.
+> Both listings come from separate compilations of `hosted/swap.c`, into
+> `build/swap-c.o` at `-O0` and `build/swap-c-os.o` at `-Os`. Neither is
+> the build that `solution/` contains, which remains at `-O0`, as every
+> checkpoint in this course does. Both objects live under `build/` so that
+> `make clean` removes them; an object written outside the tree survives a
+> clean, and a later run can read a stale one without noticing.
 
 ### B3. A third formulation: extended inline assembly
 
