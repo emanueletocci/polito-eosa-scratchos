@@ -1,8 +1,8 @@
 # Week 8 lab — synchronization, solo
 
-Covers week 7's topic (the spinlock), per the lab-lag rule — this lab
-happens during week 8, the first week of the FreeRTOS pillar, before
-that week's own lecture content. This is the last lab against
+Covers week 7's topic (the spinlock), per the lab-lag rule: the lab
+is held during week 8, the first week of the FreeRTOS pillar, and
+extends the work done in week 7. This is the last lab against
 `scratch-os` in this course.
 
 ## Starting point

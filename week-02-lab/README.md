@@ -1,7 +1,10 @@
 # Week 2 laboratory — the toolchain, end to end
 
-This laboratory covers week 1's topic, the toolchain pipeline. Per the
-lab-lag rule it is held during week 2, ahead of that week's own lecture.
+This laboratory covers week 1's topic, the toolchain pipeline, and
+extends the work done in class. It also practises two skills that week
+2's topic, boot and CPU configuration, relies on: writing a function the
+compiler gives no prologue or epilogue, and reading the vector table out
+of a linked image. The closing section identifies where each is used.
 
 ## Objectives
 
@@ -161,8 +164,9 @@ no prologue and no epilogue; the closing `bx lr` is already present for
 that reason and must remain the final instruction. Your instructions
 belong before it.
 
-Three properties of the calling convention are required. Week 2's
-lecture establishes them formally; treat them as provisional:
+The exercise requires three properties of the calling convention,
+stated here to the extent it needs them; week 2's lecture treats the
+convention in full:
 
 - the first argument is passed in `r0`, the second in `r1`;
 - a return value would be passed in `r0`; this function has none;

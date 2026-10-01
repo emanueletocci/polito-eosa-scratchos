@@ -1,7 +1,7 @@
 # Week 4 lab — interrupts and IO, solo
 
-Covers week 3's topic (interrupts and IO), per the lab-lag rule — this
-lab happens during week 4, before that week's lecture content.
+Covers week 3's topic (interrupts and IO), per the lab-lag rule: the
+lab is held during week 4 and extends the work done in week 3.
 
 ## Starting point
 

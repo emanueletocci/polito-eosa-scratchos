@@ -9,7 +9,7 @@ the index and the format reference; the labs themselves are not here.
 | Lab | Covers | Starts from | Format |
 |:--|:--|:--|:--|
 | [`week-02-lab/`](../../week-02-lab/) | week 1 — toolchain | `week-01/` | new |
-| [`week-03-lab/`](../../week-03-lab/) | week 2 — boot | `week-02/solution/` | moved only |
+| [`week-03-lab/`](../../week-03-lab/) | week 2 — boot | `week-02/solution/` | new |
 | [`week-04-lab/`](../../week-04-lab/) | week 3 — interrupts and IO | `week-03/` | moved only |
 | [`week-05-lab/`](../../week-05-lab/) | week 4 — memory | `week-04/` | moved only |
 | [`week-06-lab/`](../../week-06-lab/) | week 5 — scheduling, part 1 | `week-05/` | moved only |
@@ -26,7 +26,8 @@ carry no time estimates.
 
 A lab folder's number is the **calendar week the lab runs in**, the same
 as every other week-numbered thing in this course. Per the lab-lag rule
-it covers the *previous* week's topic, so `week-04-lab/` runs in week 4,
+it covers the *previous* week's topic and extends the work done in
+class, so `week-04-lab/` runs in week 4,
 covers week 3, and starts from `week-03/`.
 
 That means a lab folder does **not** pair with the `week-NN/` beside it.

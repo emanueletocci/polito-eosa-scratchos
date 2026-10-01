@@ -1,8 +1,8 @@
 # Week 5 lab — memory management, solo
 
 Covers week 4's topic (static memory partitioning), per the lab-lag
-rule — this lab happens during week 5, before that week's lecture
-content.
+rule: the lab is held during week 5 and extends the work done in
+week 4.
 
 ## Starting point
 

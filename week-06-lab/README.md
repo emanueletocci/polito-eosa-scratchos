@@ -1,8 +1,8 @@
 # Week 6 lab — scheduling, part 1, solo
 
 Covers week 5's topic (the cyclic-executive dispatcher), per the
-lab-lag rule — this lab happens during week 6, before that week's
-lecture content.
+lab-lag rule: the lab is held during week 6 and extends the work done
+in week 5.
 
 ## Starting point
 

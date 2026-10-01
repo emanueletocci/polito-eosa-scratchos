@@ -1,8 +1,8 @@
 # Week 7 lab — scheduling, part 2, solo
 
 Covers week 6's topic (EDF, aperiodic/sporadic, mixed, predictability),
-per the lab-lag rule — this lab happens during week 7, before that
-week's lecture content. No new code this week either; this is
+per the lab-lag rule: the lab is held during week 7 and extends the
+work done in week 6. No new code this week either; this is
 schedulability analysis, on paper.
 
 ## Starting point
