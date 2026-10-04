@@ -210,6 +210,35 @@ address designates the `udiv` itself, so that the fault's cause can be
 located; the instruction is `udiv` rather than `sdiv` because the
 operands are `uint32_t`. Its operands are `r2` (42) and `r3` (0).
 
+**Step 5.** At the same stop:
+
+```text
+(gdb) p/x $lr
+$1 = 0xfffffff9
+(gdb) x/2wx 0xE000ED28
+0xe000ed28:	0x02000000	0x00000000
+(gdb) p/x $sp
+$2 = 0x203fffc8
+(gdb) break UsageFault_Handler
+(gdb) continue
+(gdb) p/x $sp
+$3 = 0x203fffc0
+```
+
+`lr` is `0xfffffff9`, the exception-return value: no instruction lies at
+that address, and the processor recognises the value when the handler
+returns. It differs from the stacked `lr`, `0x9f`, which belongs to the
+interrupted code (architectural). CFSR is `0x02000000`: bit 25, which is
+`DIVBYZERO` (architectural). HFSR is `0` because a HardFault was not
+taken; the UsageFault was taken as itself.
+
+The stack pointer is `0x203fffc8` at the first instruction and
+`0x203fffc0` after the prologue, 8 bytes lower: the compiler's
+`push {r7, lr}` (this build). A routine that must find the frame by
+reading `sp` would read the moved value; the amount depends on the
+compiler and its options, so such a routine must read `sp` before any
+compiler-generated code runs.
+
 The other three handlers take the same form, each printing its own name;
 see `solution/src/main.c`.
 
@@ -239,6 +268,8 @@ $1 = 0x0
 $2 = 0x1
 (gdb) p $xpsr & 0x1ff
 $3 = 11
+(gdb) p/x $lr
+$4 = 0xfffffff9
 (gdb) x/8wx $sp
 0x203fffd0:	0x00000001	0x20000000	0x20000020	0x00000000
 0x203fffe0:	0x00000000	0x0000015f	0x00000170	0x01000000
@@ -247,7 +278,9 @@ $3 = 11
 ```
 
 CONTROL is `0x0` in `main` and `0x1` in the handler: nPRIV remains set
-(architectural). The handler is nonetheless privileged, because it
+(architectural). `lr` is `0xfffffff9` here as in A3: the value does not
+depend on which exception was taken, only on the state it interrupted
+(architectural, for an interrupted Thread mode using the main stack). The handler is nonetheless privileged, because it
 executes in Handler mode, which is always privileged whatever CONTROL
 holds.
 
@@ -404,3 +437,93 @@ subtract 2 to reach the `svc` instruction, read the halfword there, and
 keep its low byte. A handler written in C must do this before its own
 prologue changes the stack pointer, which is why such handlers usually
 begin with a few instructions of assembly.
+
+### B4. Follow a call, a watched value and a write
+
+**Part 1.**
+
+```text
+(gdb) bt
+#0  semihost_write0 (message=0x290 "main: privileged hello\n") at src/main.c:49
+#1  0x00000158 in main () at src/main.c:160
+(gdb) info registers r0 lr
+r0             0x290               656
+lr             0x159               345
+(gdb) x/s $r0
+0x290:	"main: privileged hello\n"
+(gdb) info symbol $lr
+main + 13 in section .text
+(gdb) finish
+main () at src/main.c:165
+165	    semihost_write0( data_message );
+```
+
+`r0` holds the address of the string, the first argument; `lr` holds the
+return address (architectural). `lr` is `0x159`, one more than the
+`0x158` that `bt` gives for the caller's frame: bit 0 marks Thumb code,
+and the instruction is at `0x158`. The symbol is `main + 13`, the
+instruction after the call; the addresses are this build's. `finish`
+stops at line 165, the statement after the call; the function returns no
+value, so `r0` afterwards is not a result.
+
+**Part 2.**
+
+```text
+(gdb) tbreak semihost_write0
+Temporary breakpoint 2 at 0xd8: file src/main.c, line 49.
+(gdb) continue
+Temporary breakpoint 2, semihost_write0 (message=0x20000000 <data_message> "main: this text lives in .data\n") at src/main.c:49
+(gdb) info registers r0
+r0             0x20000000          536870912
+(gdb) info breakpoints
+No breakpoints, watchpoints, tracepoints, or catchpoints.
+```
+
+`r0` is `0x20000000`, against `0x290` in Part 1. A string literal is
+read-only data kept in flash, which begins at 0 (architectural: code
+region); `data_message` is an initialised variable, so it lives in RAM at
+`0x20000000` (architectural: SRAM region), where `Reset_Handler`'s
+`.data` copy placed its initial value (this build for the addresses). The
+temporary breakpoint removed itself when hit, so `info breakpoints`
+lists none.
+
+**Part 3.**
+
+```text
+Hardware watchpoint 2: systick_ctrl
+Hardware watchpoint 2: systick_ctrl
+Old value = (volatile uint32_t *) 0x0 <isr_vector>
+New value = (volatile uint32_t *) 0xe000e010
+main () at src/main.c:213
+213	    *systick_ctrl = 0;
+```
+
+The initialisation `systick_ctrl = ( volatile uint32_t * ) 0xE000E010`
+changed the variable; a watchpoint reports after the store completes, so
+line 213, the write through the pointer that faults, is the statement
+about to execute. The old value is this build's: the stack slot held 0.
+
+**Part 4.**
+
+```text
+0x40010010:	0x00000000
+0x40028000:	0x00000003
+0x40080000:	0x00000000
+```
+
+and QEMU's terminal prints:
+
+```text
+cmsdk-ahb-gpio: unimplemented device write (size 4, offset 0x010, value 0x00000001)
+cmsdk-ahb-gpio: unimplemented device read  (size 4, offset 0x010)
+RESERVED 4: unimplemented device write (size 4, offset 0x050000, value 0xdeadbeef)
+RESERVED 4: unimplemented device read  (size 4, offset 0x050000)
+```
+
+`0x40010000`, GPIO0, is a **placeholder**: the write was logged and
+dropped, and the read returned 0. `0x40028000`, the board's LED register,
+is **modelled**: it kept `3`, and QEMU printed nothing. `0x40080000` lies
+in no device's range: QEMU names the region, `RESERVED 4`, and again
+returns 0. None of the three faulted. The line naming the device, the
+line naming a region, and the absence of any line are the three
+observations that told them apart.

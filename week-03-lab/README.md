@@ -2,14 +2,14 @@
 
 This laboratory covers week 2's topic, boot and CPU configuration, and
 extends the work done in class. Its subject is the **exception side** of
-week 2: the fault
-handlers, the system call, and the transition to unprivileged execution.
-The boot side — the vector table, the `.data` copy, the `.bss` clear and
-the CPU configuration — was written in class and is supplied complete.
-The exception mechanism and the debugger practice developed here are
-what week 3's topic, interrupts and IO, builds on; the closing section
-identifies where. You work in [`starter/`](starter/), derived from `week-02/solution/`;
-worked solutions are in [`SOLUTIONS.md`](SOLUTIONS.md).
+week 2: the fault handlers, the system call, and the transition to
+unprivileged execution. The boot side — the vector table, the `.data`
+copy, the `.bss` clear and the CPU configuration — was written in class
+and is supplied complete. The exception mechanism and the debugger
+practice developed here are what week 3's topic, devices, interrupts and
+system calls, builds on; the closing section identifies where. You work
+in [`starter/`](starter/), derived from `week-02/solution/`; worked
+solutions are in [`SOLUTIONS.md`](SOLUTIONS.md).
 
 ## Objectives
 
@@ -246,13 +246,47 @@ you read this change out of the image.
    address designates. Identify, among `r0`–`r3`, the two operands of
    the division.
 
+5. **Record three further values**, still stopped at the handler's first
+   instruction. Each takes one command.
+
+   ```text
+   (gdb) p/x $lr
+   (gdb) x/2wx 0xE000ED28
+   (gdb) p/x $sp
+   (gdb) break UsageFault_Handler
+   (gdb) continue
+   (gdb) p/x $sp
+   ```
+
+   - `lr` is not the stacked `lr` of step 4. On exception entry the
+     processor writes into the register a value that is the address of
+     no instruction; it recognises that value on return. Both are
+     described in `lecture-notes/week-03.md`, "Exception entry: what the
+     hardware saves". **Record** the value.
+   - `0xE000ED28` and the word after it are the Configurable Fault
+     Status Register (CFSR) and the HardFault Status Register (HFSR).
+     The upper half of CFSR reports UsageFault causes: bit 16
+     `UNDEFINSTR`, 17 `INVSTATE`, 18 `INVPC`, 19 `NOCP`, 24 `UNALIGNED`,
+     25 `DIVBYZERO` (Armv7-M Architecture Reference Manual, the section
+     on the Configurable Fault Status Register). **Record** both words, name
+     the bit set in CFSR and the condition it reports, and state why
+     HFSR holds no bit.
+   - The two `p/x $sp` commands read the stack pointer at the handler's
+     first instruction and after the compiler's prologue, the plain
+     `break` having stopped there. **Record** both values and their
+     difference, and state why a routine that must locate the stacked
+     frame by reading `sp` cannot begin as a function whose prologue the
+     compiler writes.
+
 Finally write the other three fault handlers in the same form:
 `HardFault_Handler`, `MemManage_Handler` and `BusFault_Handler`. Set
 `DEMO_DIVIDE_BY_ZERO` back to `0`.
 
 **Checkpoint:** the exception number recorded while the program was
 silent; the handler's message printed; the stacked frame recorded, with
-the faulting instruction and its operands identified.
+the faulting instruction and its operands identified; `lr`, the fault
+status registers and the two stack-pointer values recorded and
+accounted for.
 
 ### A4. Drop privilege, and return through a system call
 
@@ -279,13 +313,14 @@ through "Adding the system call".
    (gdb) continue
    (gdb) p/x $control
    (gdb) p $xpsr & 0x1ff
+   (gdb) p/x $lr
    (gdb) x/8wx $sp
    (gdb) x/i *(unsigned *)($sp + 24) - 2
    ```
 
    **Record** CONTROL in `main` and in the handler, the exception
-   number, the stacked return address, and the instruction two bytes
-   before it. The handler runs privileged although nPRIV is still set:
+   number, `lr` (compare it with A3's), the stacked return address, and
+   the instruction two bytes before it. The handler runs privileged although nPRIV is still set:
    account for that from "Touching the hardware without privilege".
 
 Compare the stacked return address with A3's. There it designated the
@@ -293,8 +328,9 @@ instruction that faulted; here it designates the instruction **after**
 the `svc`. Account for the difference in terms of what each exception
 is for, and of where execution must resume when its handler returns.
 
-**Checkpoint:** CONTROL recorded on both sides of the drop; the
-supervisor call's stacked return address shown to follow the `svc`.
+**Checkpoint:** CONTROL recorded on both sides of the drop; `lr` in the
+handler recorded; the supervisor call's stacked return address shown to
+follow the `svc`.
 
 ### A5. Touch SysTick without privilege
 
@@ -334,6 +370,8 @@ recorded, with the faulting store and its target address identified.
 - Four fault handlers and `SVC_Handler` written, and the selection of
   each by the vector table accounted for by weak and strong definitions.
 - CONTROL recorded on both sides of the privilege drop.
+- `lr` on exception entry, the fault status registers and the stack
+  pointer before and after a prologue recorded, each accounted for.
 - Three stacked frames recorded — UsageFault, SVCall and BusFault — and
   the difference between the return address a fault stacks and the one
   a supervisor call stacks accounted for.
@@ -347,10 +385,11 @@ facilities.
 
 ### B1. Separate the platform from the program
 
-`lecture-notes/week-03.md`, "What QEMU models, and how to tell", shows
+`lecture-notes/week-03.md`, "Touching a device that is not there", shows
 that an access to a device QEMU does not implement neither faults nor
-reports anything, and that `-d unimp,guest_errors` reveals it. Use the
-hook from A2 to run with that option:
+reports anything by default, and that `-d unimp` reveals it; the section
+adds that `-d guest_errors` covers the remaining case, a modelled device
+used wrongly. Use the hook from A2 to run with both options:
 
 ```text
 make run QEMU_EXTRA="-d unimp,guest_errors"
@@ -424,6 +463,101 @@ byte.
 **Checkpoint:** two halfwords recorded and the number located in them;
 the handler's steps stated.
 
+### B4. Follow a call, a watched value and a write
+
+The debugger commands below are those that a program with several
+functions, a changing variable and a device needs; none appeared in
+week 2's list. Each has one purpose.
+
+| Command | Effect |
+|--|--|
+| `backtrace` (`bt`) | list the chain of calls that led to the current point, innermost first |
+| `info symbol ADDR` | name the function or variable containing an address, with the offset |
+| `finish` | run until the current function returns, and stop in its caller |
+| `tbreak LOCATION` | a breakpoint that deletes itself the first time it is hit |
+| `info breakpoints` | list the breakpoints, and how often each was hit |
+| `watch EXPR` | stop when the value of an expression changes, reporting the old and the new value |
+| `delete` | remove every breakpoint and watchpoint |
+| `set {unsigned int}ADDR = V` | store the 32-bit value `V` at `ADDR`, as an access made by the debugger |
+
+Work from your completed `starter/`, or from `solution/`, with the
+`debug` target of A2.
+
+**Part 1: a call.** `make debug` in one terminal; in the other:
+
+```text
+(gdb) target remote :1234
+(gdb) break semihost_write0
+(gdb) continue
+(gdb) bt
+(gdb) info registers r0 lr
+(gdb) x/s $r0
+(gdb) info symbol $lr
+(gdb) finish
+```
+
+**Record** the call chain, `r0`, the string it designates, `lr`, and the
+symbol and offset `lr` falls at, then the line at which `finish` stops.
+In a call the caller places the first argument in `r0` and the return
+address in `lr`; confirm both from what you recorded. `lr` is odd: relate
+it to the address `bt` gives for the caller's frame, and to the Thumb bit
+of week 2. The function returns no value, so `r0` after `finish` means
+nothing.
+
+**Part 2: a one-shot breakpoint.** In the same session:
+
+```text
+(gdb) delete
+(gdb) tbreak semihost_write0
+(gdb) continue
+(gdb) info registers r0
+(gdb) info breakpoints
+```
+
+**Record** `r0` and the output of `info breakpoints`. The argument
+differs in kind from Part 1's: the first call passes a string literal and
+this one a variable. Place each address in the memory map of week 2 and
+account for the difference.
+
+**Part 3: a watched value.** Stop QEMU with `Ctrl-C`, and start again
+with `make debug`. In gdb:
+
+```text
+(gdb) target remote :1234
+(gdb) break main
+(gdb) continue
+(gdb) watch systick_ctrl
+(gdb) continue
+```
+
+**Record** the old and the new value, and the line gdb reports. State
+which statement changed the variable and which statement executes next.
+
+**Part 4: a write made by the debugger.** Stop QEMU, and start it with
+the hook of A2, `make debug QEMU_EXTRA="-d unimp"`. In gdb, after
+`target remote :1234`:
+
+```text
+(gdb) set {unsigned int}0x40010010 = 1
+(gdb) x/wx 0x40010010
+(gdb) set {unsigned int}0x40028000 = 3
+(gdb) x/wx 0x40028000
+(gdb) set {unsigned int}0x40080000 = 0xdeadbeef
+(gdb) x/wx 0x40080000
+```
+
+**Record**, for each address, the value gdb reads back and the lines
+QEMU prints in its own terminal. `lecture-notes/week-03.md`, "Touching a
+device that is not there", distinguishes a device QEMU models, a
+placeholder for a device it does not implement, and an address with no
+device; state which each of the three addresses is, and which observation
+told you.
+
+**Checkpoint:** the call recorded with its argument, return address and
+symbol; the one-shot breakpoint and its removal recorded; the watched
+change recorded and attributed to a statement; three writes recorded,
+each classified.
+
 ### Done looks like — Part B
 
 - One run that faults without any diagnostic and one that reports a
@@ -433,32 +567,52 @@ the handler's steps stated.
   the slots your handlers changed identified.
 - The `svc` number located in the instruction's encoding through the
   stacked return address.
+- A call followed in the debugger — argument register, return address,
+  caller — a variable watched through a change, and three writes made by
+  the debugger classified as modelled, placeholder or absent.
 
 ---
 
 ## Where this goes next
 
-Week 3's lecture treats interrupts and IO. Its central idea is one this
-laboratory has prepared: **an interrupt is an exception whose source is
+Week 3's lecture (`lecture-notes/week-03.md`) treats devices, interrupts
+and system calls: a driver for the serial port, the calling convention,
+SysTick and the NVIC, and a system-call layer built on `svc`. Its
+central idea is one this laboratory has prepared: **an interrupt is an exception whose source is
 a device rather than the program.** The mechanism you exercised here is
-the one week 3 drives from peripherals.
+the one week 3 drives from peripherals and, for system calls, from the
+program itself.
 
+- **A3–A5** had you read the eight words the processor stacks on
+  exception entry, and observe the processor enter a handler through
+  its slot in the vector table. Week 3's "Exception entry: what the
+  hardware saves" describes the same frame, and its `SysTick_Handler`
+  and `UART0TX_Handler` are functions of the same kind as yours,
+  entered the same way: `SysTick_Handler` through slot 15, and
+  `UART0TX_Handler`, IRQ 1, through slot 17.
 - **B2** found the table to hold exactly the 16 entries the exceptions
-  table lists before "16+ IRQs". Week 3's NVIC numbers device
-  interrupts from 0 and places them in the entries **after** those
-  sixteen: IRQ *n* is exception 16 + *n*.
-- **A3–A5** had you write handlers as ordinary C functions and observe
-  the processor enter them through their slots in the vector table.
-  Week 3's `SysTick_Handler` and `UART0TX_Handler` are functions of the
-  same kind, entered the same way: `SysTick_Handler` through slot 15,
-  and `UART0TX_Handler`, IRQ 1, through slot 17.
+  table lists before "16+ IRQs". Week 3's "The board's interrupt lines"
+  numbers device interrupts from 0 and places them in the entries
+  **after** those sixteen: IRQ *n* is exception 16 + *n*.
 - **A4** showed a handler running privileged while the interrupted code
-  was not. An interrupt handler inherits that property, and adds that
-  one handler can preempt another.
+  was not; an interrupt handler inherits that property, and one handler
+  can preempt another. **B3** located the number `n` of `svc #n` in the
+  instruction's encoding through the stacked return address. Week 3's
+  "Reading the number from the stacked frame" uses exactly that
+  procedure to tell one system call from another.
 - **A5** faulted on SysTick's control register, `0xE000E010`, written
-  from unprivileged code. Week 3's lecture programs that register from
-  privileged code, to make SysTick interrupt periodically.
+  from unprivileged code. Week 3's "SysTick: the core timer" programs
+  that register from privileged code, to make SysTick interrupt
+  periodically.
+- **B4** read a call's argument from `r0` and its return address from
+  `lr`. Week 3's "The AAPCS: how C calls a function" states that rule,
+  and its "Catching an exception frame in gdb" uses the commands B4
+  practised, with `finish` and `watch`.
+- **B1** separated what the platform does not implement from what the
+  program does wrong. Week 3 addresses devices through memory-mapped
+  registers, where the same question arises for every device it uses;
+  "Touching a device that is not there" gives the means you used here.
 
-The `Makefile` you adapted in A1 and extended in A2 remains yours: the
-later checkpoints have a `run` target but no `debug` target, and adding
-one is the step A2 practised.
+The `Makefile` you adapted in A1 and extended in A2 remains yours. A
+checkpoint whose `Makefile` lacks a `debug` target is given one by the
+step A2 practised.
