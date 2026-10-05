@@ -23,7 +23,7 @@
 
 /* Only uint32_t is needed here; no other header is pulled in. */
 #include <stdint.h>
-
+#include <stdio.h>
 /* Set this to 1 to make main() divide by zero instead of running the
  * privilege demo. CCR.DIV_0_TRP was turned on in Reset_Handler, so the
  * division traps into UsageFault_Handler instead of silently giving 0. */

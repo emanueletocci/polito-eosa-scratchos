@@ -8,8 +8,8 @@
  * platform). Memory layout matches the board's actual FLASH/RAM
  * addresses and sizes.
  *
- * Deliberately minimal for week 1: one stack, no per-task partitions
- * (that's week 4's topic), no heap (nothing here allocates dynamically -
+ * Deliberately minimal: one stack, no per-task partitions
+ * (that comes later in the course), no heap (nothing here allocates dynamically -
  * see three-pillar-curriculum's static-memory scratch-OS scope).
  */
 
@@ -75,7 +75,7 @@ SECTIONS
     } > RAM
 
     /* Heap region: reserved so the overflow check below is meaningful,
-     * even though week 1's code never calls malloc. */
+     * even though this code never calls malloc. */
     .heap :
     {
         . = ALIGN(8);          /* malloc alignment on this ABI is 8 */

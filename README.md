@@ -33,7 +33,7 @@ Requires the toolchain — see
 |---|---|
 | `week-01/` | Toolchain pipeline proof (boot → semihosting write) |
 | `week-02/solution/` | Boot code written in pure assembly (`boot/startup.s`: vector table, reset handler, CPU setup), fault and SVC handlers, and a privileged → unprivileged demo |
-| `week-03/` | SysTick + polled/interrupt-driven UART; `main()` becomes the idle loop |
+| `week-03/base/` and `week-03/solution/` | Layered mini-kernel (boot, kernel, drivers, lib, include, src); UART device driver (polled and interrupt-driven with ring buffer), 10 ms SysTick tick with uptime, kprintf (kernel) and printf (app), system calls (write, read, uptime) for unprivileged app |
 | `week-04/` | Static per-task memory partitions (`mps2_m3.ld`), isolation verified at runtime |
 | `week-05/` | Tick-driven cyclic-executive scheduler (3 tasks, hand-written context switch) |
 | *(none)* | Week 6 is theory-only (EDF/aperiodic/mixed/predictability) — `week-05/` stays current |
