@@ -1,12 +1,43 @@
-# Week 4 lab — interrupts and IO, solo
+# Week 4 laboratory — interrupts and I/O
 
-Covers week 3's topic (interrupts and IO), per the lab-lag rule: the
-lab is held during week 4 and extends the work done in week 3.
+This laboratory covers week 3's topic, devices, interrupts and system
+calls, and extends the work done in class: you take the finished week 3
+operating system and add to it the devices and the interrupt handling
+the lecture introduced. Part A, in the laboratory, makes reception
+interrupt-driven, writes a timer driver and observes one interrupt
+preempting another. Part B, independent work, adds a race and its
+repair, a second serial port, the watchdog, the board's LEDs and GPIO
+block, a fourth system call, and an interrupt raised from software.
+Worked solutions are in [`SOLUTIONS.md`](SOLUTIONS.md), and the
+finished code in [`solution/`](solution/).
+
+## Objectives
+
+On completion you will have:
+
+- replaced a polled receive path by an interrupt-driven one, with a
+  ring buffer between the handler and its reader, and acknowledged the
+  interrupt at the device;
+- written a driver for a second device, the timer, enabling its
+  interrupt at both levels, in the device and in the NVIC;
+- observed, in the output and with the debugger, one interrupt preempt
+  another and, in the exception number and `EXC_RETURN`, the processor
+  returning to handler mode;
+- demonstrated a lost update between a handler and the code it
+  interrupts, and removed it with `irq_save` and `irq_restore`;
+- reused one driver for two instances of a device, and driven a device
+  that raises its interrupt as a non-maskable one;
+- read and written device registers from the debugger, and decoded the
+  accesses to a device the emulator does not model from its diagnostic
+  output;
+- added a system call, naming the four places a new service touches.
 
 ## Starting point
 
-Work on your own copy of the finished week 3 code, so the original stays
-as a reference. From the `scratch-os/` folder:
+[`../week-03/solution/`](../week-03/solution/), the finished week 3
+operating system. It has no copy in this folder: the exercises begin
+from it exactly as published. Work on your own copy, so the original
+stays as a reference. From the `scratch-os/` folder:
 
 ```sh
 cp -r week-03/solution my-week4
@@ -15,16 +46,24 @@ make clean
 ```
 
 Every path below is relative to `my-week4/`. All register and IRQ names
-come from `include/cmsdk.h`: keep it open while you work.
+come from `include/cmsdk.h`: keep it open while you work, and include it
+in any file of yours that touches a register.
 
-## Task
+## Solutions
 
-Working alone. Each numbered task lists its own sub-steps and a
-**Checkpoint** — the observable state that tells you it's done before
-you move on. No reference solution is provided; if you're stuck for more
-than a few minutes on a sub-step, ask.
+Worked solutions to every exercise are provided in
+[`SOLUTIONS.md`](SOLUTIONS.md), and the finished code of the exercises
+whose result you keep in [`solution/`](solution/). You are expected to
+attempt each exercise before consulting its solution.
 
-Three rules hold for every task:
+## Structure
+
+Each exercise lists its own sub-steps and a **Checkpoint**, the
+observable state that tells you it is done before you move on. Part A
+is for the assisted session: it is self-contained. Part B is for work
+you carry out independently afterwards.
+
+Four rules hold for every exercise:
 
 - **Acknowledge at the device.** The NVIC lines of this board are
   level-sensitive: the line stays active until the device's own flag is
@@ -37,18 +76,31 @@ Three rules hold for every task:
 - **Device registers are privileged.** Write them from kernel code: a
   handler, a system call, or `main()` *before* the privilege drop. The
   application (`src/app.c`) runs unprivileged and may not touch them.
+- **Experiments are made in a copy.** A4, B1 and B7 change code you do
+  not keep. Make each in a copy of your working folder
+  (`cp -r my-week4 my-week4-exp`, then `make clean` in it), so that
+  `my-week4` stays as the previous exercise left it.
 
-Two terminals are used with the debugger: `make debug` in the first one,
-then in the second `arm-none-eabi-gdb build/scratch-os.axf` (on Linux:
-`gdb-multiarch`) and `target remote :1234`. While the CPU is stopped in
-unprivileged code, gdb may fail to read device registers: stop inside a
-handler first, with `break *SysTick_Handler` and `continue`. The `*`
-stops on the handler's very first instruction.
+The debugger needs two terminals: `make debug` in the first one, then in
+the second `arm-none-eabi-gdb build/scratch-os.axf` and
+`target remote :1234`. How to obtain the debugger is in
+[`environment-setup.md`](../../course-material/docs/environment-setup.md).
+While the CPU is stopped in unprivileged code, gdb may fail to read
+device registers: stop inside a handler first, with
+`break *SysTick_Handler` and `continue`. The `*` stops on the handler's
+very first instruction.
 
-### 0. Get back to a known-good baseline
+If you are stuck on a sub-step, read the solution of that exercise:
+it gives the code and the reason for it.
+
+---
+
+## Part A — in the laboratory
+
+### A1. A known-good baseline
 
 1. `make run`.
-2. Quit with `Ctrl-A` then `X`.
+2. Quit with `Ctrl-C`.
 
 **Checkpoint:** you see, in order:
 
@@ -64,7 +116,7 @@ uptime: 2000 ms
 and pressing a key prints `key: <the key>`. If not, fix that before
 touching anything else.
 
-### 1. Interrupt-driven UART receive
+### A2. Interrupt-driven UART receive
 
 Device: `CMSDK_UART0` (`0x40004000`). IRQ: `UART0RX_IRQn` (0), handler
 `UART0RX_Handler`. Today `sys_read` polls `STATE`, every 10 ms. The
@@ -96,7 +148,7 @@ key prints `key: <the key>`, and `uptime` lines keep coming. In gdb,
 `break *UART0RX_Handler`, `continue`, type a key in the QEMU terminal:
 the breakpoint is hit.
 
-### 2. A timer driver
+### A3. A timer driver
 
 Device: `CMSDK_TIMER0` (`0x40000000`). IRQ: `TIMER0_IRQn` (8), handler
 `TIMER0_Handler`. The timer counts `VALUE` down at 25 MHz; at 0 it
@@ -111,13 +163,17 @@ reloads `RELOAD` and, if `TIMER_CTRL_IRQEN` is set, raises its IRQ.
    `CMSDK_TIMER0->INTSTATUS = TIMER_INT_PENDING`, count the ticks in a
    `static` variable, and every 10th tick print it with `kprintf`
    (`kernel/kprintf.h`).
-4. Call `timer0_init(100)` from `main()`, before the privilege drop.
+4. Call `timer0_init(100)` from `main()`, before the privilege drop (add
+   `#include "drivers/timer.h"`).
 
 **Checkpoint:** a `timer0: <n>` line every second, between the `uptime`
 lines. Comment out the acknowledge line: the system stops printing
 `uptime` (the handler runs forever). Put it back.
 
-### 3. Preemption
+### A4. Preemption
+
+Make this experiment in a copy of your working folder (see the rules
+above), so that `my-week4` keeps the timer of A3.
 
 Devices: `CMSDK_TIMER0` (fast, urgent) and `CMSDK_TIMER1`
 (`0x40001000`, IRQ `TIMER1_IRQn` (9), handler `TIMER1_Handler`, slow,
@@ -149,13 +205,29 @@ mode), and the nested `TIMER0_Handler` shows `0x18` (16 + 8) with
 explain why no `T0` appears inside `T1` any more, and why `uptime` stalls
 while `T1` runs (SysTick is `0xE0` too).
 
-### 4. A race, and its fix
+### Done looks like — Part A
+
+- `make run` prints the baseline, then a `timer0: <n>` line each second
+  between the `uptime` lines, and every key you type reaches the
+  application through `UART0RX_Handler` and an RX ring buffer, none lost
+  when you type fast.
+- You have shown `TIMER0` preempting a slow `TIMER1_Handler`, in the
+  output and in gdb (exception number and `EXC_RETURN`), in a copy that
+  you can discard.
+- `my-week4` builds and runs, with nothing left half-applied.
+
+---
+
+## Part B — independent work
+
+### B1. A race, and its fix
 
 A lost update: `main` does `counter = counter + 1` (load, add, store)
 while `TIMER0_Handler` also increments `counter`. If the interrupt falls
 between the load and the store, the handler's increment is overwritten.
 
-Do this experiment in `main()` **before the privilege drop**. The fix
+Make this experiment in a copy of your working folder, and in `main()`
+**before the privilege drop**. The fix
 uses `cpsid i` (inside `irq_save`), and `cpsid i` has no effect in
 unprivileged code: the experiment would show nothing.
 
@@ -179,7 +251,7 @@ lost updates). After the fix it is 0 every time. You can say why
 `irq_save` / `irq_restore` is better here than a plain `cpsid i` /
 `cpsie i`.
 
-### 5. One driver, two UARTs
+### B2. One driver, two UARTs
 
 Device: `CMSDK_UART1` (`0x40005000`). IRQs: `UART1RX_IRQn` (2) and
 `UART1TX_IRQn` (3), handlers `UART1RX_Handler` and `UART1TX_Handler`.
@@ -214,7 +286,7 @@ QEMU connects its serial ports to the UARTs in order: the first
 **Checkpoint:** the terminal shows the usual output; after quitting,
 `cat uart1.txt` prints `hello uart1`.
 
-### 6. The watchdog
+### B3. The watchdog
 
 Device: `CMSDK_WDOG` (`0x40008000`). It has no IRQ slot: its interrupt
 arrives as **NMI**, handler `NMI_Handler`, which nothing can mask. Its
@@ -238,7 +310,7 @@ feeding: no NMI, `uptime` counts on. Now put a `for (;;) { }` inside
 `SysTick_Handler` after a few seconds of uptime: the watchdog catches
 the stuck system.
 
-### 7. Board LEDs
+### B4. Board LEDs
 
 Device: `FPGAIO` (`0x40028000`), register `LED`: one bit per LED,
 1 = on. This board has two LEDs (bits 0 and 1). No IRQ. QEMU has no
@@ -255,7 +327,7 @@ window for the LEDs, so you look at them through the debugger.
 you read back `0x3`: only the bits that exist are stored. You can say
 why you stopped in a handler before reading.
 
-### 8. GPIO seen from the bus
+### B5. GPIO seen from the bus
 
 **What GPIO is.** A GPIO (general-purpose input/output) block drives a
 row of *pins*, the metal contacts of the chip. Each pin is either an
@@ -309,9 +381,9 @@ here, and why set/clear registers are safer than read-modify-write (also
 when an interrupt can change the same register between the read and the
 write).
 
-### 9. Add a system call
+### B6. Add a system call
 
-Goal: `sys_led(bits)` lets the application set the LEDs of task 7.
+Goal: `sys_led(bits)` lets the application set the LEDs of B4.
 A new service touches four places:
 
 1. **Number:** in `lib/syscalls.h`, `#define SYS_LED 4` and the
@@ -331,7 +403,7 @@ A new service touches four places:
 the stub use `svc #5` by mistake: `sys_led` returns -1 and the LEDs stop
 changing. Put it back.
 
-### 10. (Stretch) Pend an IRQ from software, measure its latency
+### B7. (Stretch) Pend an IRQ from software, measure its latency
 
 The NVIC can make an IRQ pending without the device:
 `NVIC->ISPR[n / 32] = 1UL << (n % 32)`. If the IRQ is enabled and
@@ -350,13 +422,8 @@ The numbers come in coarse steps. You can say why: QEMU is not
 cycle-accurate. It translates code the first time it runs, and its
 clock moves in steps. On a real Cortex-M3 the entry takes 12 cycles.
 
-## Done looks like
+### Done looks like — Part B
 
-- Keys reach the application through `UART0RX_Handler` and an RX ring
-  buffer, not through polling, and none is lost when you type fast.
-- `TIMER0` ticks at the period you chose, and you can show it preempting
-  a slow `TIMER1_Handler`, in the output and in gdb (exception number
-  and `EXC_RETURN`).
 - You have shown a lost update and fixed it with `irq_save` /
   `irq_restore`, and you can say why the experiment must run privileged.
 - `uart1.txt` holds what you sent on UART1 with the same driver code.
@@ -366,3 +433,24 @@ clock moves in steps. On a real Cortex-M3 the entry takes 12 cycles.
   can name the four places a new system call touches.
 - You can decode a `-d unimp` GPIO line and explain the difference
   between `DATAOUT |= bit` and `OUTENABLESET = bit`.
+- (Stretch) You have read the latency of a software-pended interrupt.
+
+---
+
+## Where this goes next
+
+Week 4's lecture (`lecture-notes/week-04.md`) treats memory management:
+how the RAM is divided, here by fixed partitions defined in the linker
+script. This laboratory has prepared two things it uses.
+
+- **Where your data lives.** The ring buffers and counters you wrote are
+  static arrays and variables: the linker places them in `.bss`, in RAM,
+  at addresses fixed when the image is linked. `arm-none-eabi-nm -n
+  build/scratch-os.axf` lists them; `rx_buf` of A2 is one. Week 4 decides
+  the same kind of placement by hand, for whole regions.
+- **Addresses that are not memory.** The registers of B4 and B5 sit at
+  `0x40028000` and `0x40010000`, outside RAM and flash: a load or store
+  there reaches a device. B5's `-d unimp` log shows what an access to
+  an unmodelled device looks like from the bus. A memory-management
+  scheme has to tell the two kinds of address apart, which is the
+  distinction `include/cmsdk.h` already draws.
