@@ -19,9 +19,9 @@ Class time should go to this week's topics, so the following is ready:
   UART, SysTick, NVIC, SCB, timers, watchdog, GPIO, FPGAIO and the
   interrupt numbers. You read and use it; you do not type it.
 - **`boot/startup.s`** has the full CPU setup (stack, `.data`, `.bss`,
-  vector table address, fault handlers, priorities) and the 16 core
-  vector table slots. The device-interrupt slots are missing: you add
-  them.
+  vector table address, fault handlers, priorities) and the complete
+  vector table: the 16 core slots and the 32 device-interrupt slots,
+  with their weak default handlers. You read it; you do not type it.
 - **API headers** (`drivers/uart.h`, `drivers/systick.h`,
   `kernel/irq.h`, `kernel/kprintf.h`, `kernel/syscall.h`,
   `lib/format.h`, `lib/printf.h`, `lib/syscalls.h`, `src/app.h`) say what
@@ -37,7 +37,7 @@ Class time should go to this week's topics, so the following is ready:
 
 | Folder | Given | You write |
 |---|---|---|
-| `boot/` | `startup.s`: CPU setup, 16 core slots | the 32 device-interrupt slots and their weak default handlers |
+| `boot/` | `startup.s`: CPU setup, 16 core slots, 32 device-interrupt slots and their weak default handlers | nothing: you read it |
 | `kernel/` | `irq.h`, `kprintf.h`, `syscall.h`; silent `faults.c`; marker files `irq.s`, `svc_entry.s`, `syscall.c`, `kprintf.c` | `irq_save`/`irq_restore`, `SVC_Handler`, the system-call table and services, `kprintf`, the fault messages |
 | `drivers/` | `uart.h`, `systick.h`; marker files `uart.c`, `systick.c` | the UART driver (polled, then ring buffer and interrupt) and the SysTick tick |
 | `lib/` | headers; number helpers in `format.c`; marker files `printf.c`, `syscalls.s` | `vformat`, the `svc` stubs, `printf`, `sleep_ms` |
@@ -67,7 +67,7 @@ Unit 2:
 3. Write the SysTick driver: a 10 ms tick and an uptime counter.
 4. Print the uptime every second.
 5. Catch an exception frame in gdb.
-6. Add the 32 device-interrupt slots to the vector table.
+6. Read the 32 device-interrupt slots in the vector table.
 7. Write the UART transmit ring buffer, driven by interrupts.
 8. Send 160 bytes through a 64-byte buffer.
 

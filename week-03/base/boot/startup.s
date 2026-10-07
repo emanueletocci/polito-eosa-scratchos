@@ -63,7 +63,7 @@
  *   - words 2..15 are the addresses of the handlers of the CPU's own
  *     exceptions (faults, system calls, system timer, ...);
  *   - words 16..47 are the addresses of the handlers of the board's
- *     device interrupts (added in Unit 2).
+ *     device interrupts (UARTs, timers, ...), IRQ 0..31.
  * When exception number N happens, the CPU reads word N and jumps
  * there.
  *
@@ -74,6 +74,9 @@
  *         NMI_Handler,                 // 2
  *         ...
  *         SysTick_Handler,             // 15
+ *         UART0RX_Handler,             // 16 = IRQ 0
+ *         ...
+ *         Default_Handler,             // 47 = IRQ 31
  *     };
  */
 
@@ -108,7 +111,58 @@ isr_vector:
     .word PendSV_Handler        /* 14: PendSV (a software-requested exception) */
     .word SysTick_Handler       /* 15: SysTick (the CPU's built-in timer) */
 
-/* CLASS: the 32 device-interrupt slots (IRQ 0..31) go here, in Unit 2. */
+/* Device interrupts (IRQs).
+ * After the 16 CPU exceptions come the interrupts of the devices on
+ * the board. The interrupt controller inside the CPU (the NVIC) numbers
+ * them from 0: "IRQ n". IRQ n is exception number 16 + n, so its
+ * handler address is word 16 + n of this table:
+ *     IRQ 0  -> word 16      IRQ 8  -> word 24      IRQ 31 -> word 47
+ * Which device is wired to which IRQ number is decided by the board,
+ * not by the CPU. The numbers below are those of the MPS2-AN385 board
+ * (the same numbers are the *_IRQn constants in include/cmsdk.h).
+ * The CPU supports up to 32 IRQs on this board, so there are 32 slots,
+ * and the whole table is now 16 + 32 = 48 words (192 bytes, 0xC0).
+ * The devices this course uses get their own handler name (a weak
+ * alias, see below); the others point straight to Default_Handler.
+ *
+ * C equivalent (continuing the array above):
+ *         UART0RX_Handler,             // 16 = IRQ 0
+ *         UART0TX_Handler,             // 17 = IRQ 1
+ *         ...
+ *         Default_Handler,             // 47 = IRQ 31
+ */
+    .word UART0RX_Handler       /* 16 = IRQ 0: UART0 received a byte */
+    .word UART0TX_Handler       /* 17 = IRQ 1: UART0 finished sending a byte */
+    .word UART1RX_Handler       /* 18 = IRQ 2: UART1 received a byte */
+    .word UART1TX_Handler       /* 19 = IRQ 3: UART1 finished sending a byte */
+    .word UART2RX_Handler       /* 20 = IRQ 4: UART2 received a byte */
+    .word UART2TX_Handler       /* 21 = IRQ 5: UART2 finished sending a byte */
+    .word Default_Handler       /* 22 = IRQ 6: GPIO0 combined (not used in this course) */
+    .word Default_Handler       /* 23 = IRQ 7: GPIO1 combined (not used in this course) */
+    .word TIMER0_Handler        /* 24 = IRQ 8: timer 0 reached zero */
+    .word TIMER1_Handler        /* 25 = IRQ 9: timer 1 reached zero */
+    .word DUALTIMER_Handler     /* 26 = IRQ 10: dual timer */
+    .word Default_Handler       /* 27 = IRQ 11: SPI (not used in this course) */
+    .word UARTOVF_Handler       /* 28 = IRQ 12: some UART lost a byte (overflow) */
+    .word Default_Handler       /* 29 = IRQ 13: Ethernet (not used in this course) */
+    .word Default_Handler       /* 30 = IRQ 14: audio I2S (not used in this course) */
+    .word Default_Handler       /* 31 = IRQ 15: touchscreen (not used in this course) */
+    .word Default_Handler       /* 32 = IRQ 16: other board interrupt (not used in this course) */
+    .word Default_Handler       /* 33 = IRQ 17: other board interrupt (not used in this course) */
+    .word Default_Handler       /* 34 = IRQ 18: other board interrupt (not used in this course) */
+    .word Default_Handler       /* 35 = IRQ 19: other board interrupt (not used in this course) */
+    .word Default_Handler       /* 36 = IRQ 20: other board interrupt (not used in this course) */
+    .word Default_Handler       /* 37 = IRQ 21: other board interrupt (not used in this course) */
+    .word Default_Handler       /* 38 = IRQ 22: other board interrupt (not used in this course) */
+    .word Default_Handler       /* 39 = IRQ 23: other board interrupt (not used in this course) */
+    .word Default_Handler       /* 40 = IRQ 24: other board interrupt (not used in this course) */
+    .word Default_Handler       /* 41 = IRQ 25: other board interrupt (not used in this course) */
+    .word Default_Handler       /* 42 = IRQ 26: other board interrupt (not used in this course) */
+    .word Default_Handler       /* 43 = IRQ 27: other board interrupt (not used in this course) */
+    .word Default_Handler       /* 44 = IRQ 28: other board interrupt (not used in this course) */
+    .word Default_Handler       /* 45 = IRQ 29: other board interrupt (not used in this course) */
+    .word Default_Handler       /* 46 = IRQ 30: other board interrupt (not used in this course) */
+    .word Default_Handler       /* 47 = IRQ 31: other board interrupt (not used in this course) */
 
 /* `.size NAME, EXPR`: record how many bytes NAME occupies (here: from
  * the label to the current position `.`). Used by nm, objdump and gdb. */
@@ -160,6 +214,40 @@ isr_vector:
 
     .weak      SysTick_Handler                  /* SysTick: may be replaced from C */
     .thumb_set SysTick_Handler, Default_Handler /* otherwise it is Default_Handler */
+
+/* The same for the device interrupts that have a name in the table.
+ * Writing, for example,
+ *     void UART0TX_Handler(void) { ... }
+ * in a C file is enough to handle IRQ 1. */
+    .weak      UART0RX_Handler                  /* UART0 receive: may be replaced from C */
+    .thumb_set UART0RX_Handler, Default_Handler /* otherwise it is Default_Handler */
+
+    .weak      UART0TX_Handler                  /* UART0 transmit: may be replaced from C */
+    .thumb_set UART0TX_Handler, Default_Handler /* otherwise it is Default_Handler */
+
+    .weak      UART1RX_Handler                  /* UART1 receive: may be replaced from C */
+    .thumb_set UART1RX_Handler, Default_Handler /* otherwise it is Default_Handler */
+
+    .weak      UART1TX_Handler                  /* UART1 transmit: may be replaced from C */
+    .thumb_set UART1TX_Handler, Default_Handler /* otherwise it is Default_Handler */
+
+    .weak      UART2RX_Handler                  /* UART2 receive: may be replaced from C */
+    .thumb_set UART2RX_Handler, Default_Handler /* otherwise it is Default_Handler */
+
+    .weak      UART2TX_Handler                  /* UART2 transmit: may be replaced from C */
+    .thumb_set UART2TX_Handler, Default_Handler /* otherwise it is Default_Handler */
+
+    .weak      TIMER0_Handler                   /* timer 0: may be replaced from C */
+    .thumb_set TIMER0_Handler, Default_Handler  /* otherwise it is Default_Handler */
+
+    .weak      TIMER1_Handler                   /* timer 1: may be replaced from C */
+    .thumb_set TIMER1_Handler, Default_Handler  /* otherwise it is Default_Handler */
+
+    .weak      DUALTIMER_Handler                /* dual timer: may be replaced from C */
+    .thumb_set DUALTIMER_Handler, Default_Handler  /* otherwise it is Default_Handler */
+
+    .weak      UARTOVF_Handler                  /* UART overflow: may be replaced from C */
+    .thumb_set UARTOVF_Handler, Default_Handler /* otherwise it is Default_Handler */
 
 /* ================================================================== */
 /* 2. Reset_Handler                                                    */
