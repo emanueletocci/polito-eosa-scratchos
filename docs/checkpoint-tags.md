@@ -49,7 +49,7 @@ this cumulative line. Specifically:
 
 A lab folder's number is the calendar week the lab runs in, so it does
 not pair with the `week-NN/` beside it — `week-04-lab/` runs in week 4
-and derives from `week-03/`. See
+and derives from `week-03/solution/`. See
 [`labs/README.md`](labs/README.md).
 
 ## Week 1
