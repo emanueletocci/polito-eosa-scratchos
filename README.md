@@ -60,8 +60,8 @@ Beside the checkpoints sit `week-02-lab/` through `week-08-lab/`, one per
 lab. A lab folder's number is the **calendar week the lab runs in**, and
 per the lab-lag rule it covers the *previous* week's topic and extends
 the work done in class — so
-`week-04-lab/` runs in week 4, covers week 3, and its `starter/` derives
-from `week-03/`. A lab folder therefore does **not** pair with the
+`week-04-lab/` runs in week 4, covers week 3, and it starts from
+`week-03/solution/`. A lab folder therefore does **not** pair with the
 `week-NN/` next to it, and you never need to work out which checkpoint to
 copy: the prepared starting code is already inside the lab folder.
 

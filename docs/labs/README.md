@@ -10,7 +10,7 @@ the index and the format reference; the labs themselves are not here.
 |:--|:--|:--|:--|
 | [`week-02-lab/`](../../week-02-lab/) | week 1 — toolchain | `week-01/` | new |
 | [`week-03-lab/`](../../week-03-lab/) | week 2 — boot | `week-02/solution/` | new |
-| [`week-04-lab/`](../../week-04-lab/) | week 3 — interrupts and IO | `week-03/` | moved only |
+| [`week-04-lab/`](../../week-04-lab/) | week 3 — interrupts and IO | `week-03/solution/` (no `starter/`) | new |
 | [`week-05-lab/`](../../week-05-lab/) | week 4 — memory | `week-04/` | moved only |
 | [`week-06-lab/`](../../week-06-lab/) | week 5 — scheduling, part 1 | `week-05/` | moved only |
 | [`week-07-lab/`](../../week-07-lab/) | week 6 — scheduling, part 2 | `week-05/` | moved only |
@@ -47,8 +47,13 @@ week-NN-lab/
   README.md      the task: Part A, Part B, budgets, what "done" looks like
   starter/       what you edit — a prepared copy of the earlier checkpoint
   solution/      the finished state; `make run` works
+  HINTS.md       (labs that withhold a recipe) three levels of help per exercise
   SOLUTIONS.md   worked answers to every exercise
 ```
+
+A lab whose exercises begin from a checkpoint exactly as published has no
+`starter/`: its README names the checkpoint and the command that copies
+it.
 
 An analysis-only lab (one with no code) has no `starter/` or
 `solution/`, and says so.
@@ -74,6 +79,25 @@ Every laboratory divides its exercises in two:
 
 Exercises marked optional extend the material beyond what the
 laboratory requires.
+
+## Attempt first
+
+Where an exercise's code depends on a rule you may not yet hold, the
+README states the behaviour required and the names to provide, not the
+register operations, and does not state the rule before the exercise. A
+first attempt can then fail, and the failure is part of the work: the
+README asks you to find out how far the event gets, with the debugger,
+before changing the code. A collapsed **Debrief** after the checkpoint
+names what failed and why.
+
+Such a lab provides `HINTS.md`, three levels per exercise, each
+complete in itself: the concept, the rule or register involved, and the
+shape of the code, never the finished code. A lab may also supply
+defective programs to diagnose, as one replacement file each, with the
+diagnosis in `SOLUTIONS.md`.
+
+Solutions are published with the lab all the same; this is a matter of
+how the exercises are posed, not of access.
 
 ## Exercises and solutions
 
