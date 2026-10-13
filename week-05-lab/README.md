@@ -442,8 +442,8 @@ amount of memory free at each, and an explanation of the difference.
 
 ## Where this goes next
 
-Week 5's lecture (`lecture-notes/week-05.md`) treats scheduling: several
-tasks, each with its own stack, taking turns on the processor. This
+Week 5 treats scheduling: several tasks, each with its own stack,
+taking turns on the processor. This
 laboratory has prepared two things it uses.
 
 - **What the kernel must change when the task changes.** Region 1, and
