@@ -556,9 +556,8 @@ clock moves in steps. On a real Cortex-M3 the entry takes 12 cycles.
 
 ## Where this goes next
 
-Week 4's lecture (`lecture-notes/week-04.md`) treats memory management:
-how the RAM is divided, here by fixed partitions defined in the linker
-script. This laboratory has prepared two things it uses.
+Week 4 treats memory management: how the RAM is divided, here by fixed
+partitions defined in the linker script. This laboratory has prepared two things it uses.
 
 - **Where your data lives.** The ring buffers and counters you wrote are
   static arrays and variables: the linker places them in `.bss`, in RAM,

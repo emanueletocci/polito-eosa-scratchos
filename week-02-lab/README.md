@@ -190,9 +190,8 @@ Error: garbage following instruction -- `ldr r2,[r0]ldr r3,[r1]...'
 ```
 
 quoting your instructions end to end, against a temporary `.s` file rather
-than `swap.c`. `lecture-notes/week-02.md` states the rule; the treatment in
-`tutorials/arm-assembly-basics/` §4 explains why `\n\t` is the more common
-spelling.
+than `swap.c`. The treatment in `tutorials/arm-assembly-basics/` §4
+explains why `\n\t` is the more common spelling.
 
 The build emits two diagnostics once the parameters are no longer
 referenced in C:
@@ -209,8 +208,7 @@ the diagnostics on that basis.
 > References: `tutorials/arm-assembly-basics/` §4 (`naked`, `volatile`,
 > inline assembly) and §5 (the calling convention, with a worked example
 > of a standalone assembly function called from C). Optional, but
-> directly applicable. `lecture-notes/week-02.md` is the lecture that
-> treats the subject formally.
+> directly applicable.
 
 **Checkpoint:** `make run` prints four lines, the C and the assembly
 implementation exchanging their values identically; and you can state
