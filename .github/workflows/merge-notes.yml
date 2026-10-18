@@ -5,21 +5,24 @@ name: Merge notes
 on:
   push:
     paths:
-      - "notes/*.pdf"            # a chapter was added or updated
-      - "notes/logo.png"         # the cover logo changed
+      - "docs/notes/*.pdf"            # a chapter was added or updated
+      - "docs/notes/logo.png"         # the cover logo changed
       - "scripts/merge_notes.py"
-      - "!notes/merged/**"       # never react to the merged PDF itself
-  workflow_dispatch:             # "Run workflow" button in the Actions tab
+      - "!docs/notes/merged/**"       # never react to the merged PDF itself
+  workflow_dispatch:                  # "Run workflow" button in the Actions tab
 
 permissions:
-  contents: write                # needed to commit the merged PDF
+  contents: write                     # needed to commit the merged PDF
 
 env:
-  NOTES_DIR: notes                              # folder with 01-…pdf, 02-…pdf, …
-  OUTPUT: notes/merged/embedded-os-notes.pdf    # merged PDF
-  LOGO: notes/logo.png                          # PNG or JPG for the cover (optional)
+  NOTES_DIR: docs/notes                                # folder with 01-…pdf, 02-…pdf, …
+  OUTPUT: docs/notes/merged/embedded-os-notes.pdf      # merged PDF
+  LOGO: docs/notes/logo.png                            # PNG or JPG for the cover (optional)
   TITLE: "Embedded Operating Systems and Architecture"
-  SUBTITLE: "Personal notes · 01WMQWQ · A.Y. 2026/27"
+  COURSE_CODE: "01WMQWQ"
+  PROGRAM: "MSc in Cybersecurity Engineering"
+  YEAR: "2026/27"
+  PROFESSOR: "Stefano Di Carlo"
   AUTHOR: "Emanuele Tocci"
 
 jobs:

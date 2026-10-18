@@ -8,9 +8,12 @@ Configuration comes from environment variables (set in the workflow):
   NOTES_DIR      folder with the chapter PDFs            (default: notes)
   OUTPUT         path of the merged PDF                  (default: <NOTES_DIR>/merged/notes.pdf)
   LOGO           PNG or JPG logo for the cover           (optional)
-  TITLE          cover title
-  SUBTITLE       line under the title                    (optional)
-  AUTHOR         author line                             (optional)
+  TITLE          course name, the cover title
+  COURSE_CODE    course code, e.g. 01WMQWQ               (optional)
+  PROGRAM        degree programme                        (optional)
+  YEAR           academic year                           (optional)
+  PROFESSOR      course instructor                       (optional)
+  AUTHOR         author of the notes                     (optional)
 """
 import datetime
 import os
@@ -34,10 +37,9 @@ def chapter_title(path: Path) -> str:
 
 
 def make_cover(path: Path, chapters: list[Path]) -> None:
-    title = os.environ.get("TITLE", "Course Notes")
-    subtitle = os.environ.get("SUBTITLE", "")
-    author = os.environ.get("AUTHOR", "")
-    logo = os.environ.get("LOGO", "")
+    env = os.environ.get
+    title, code, program = env("TITLE", "Course Notes"), env("COURSE_CODE", ""), env("PROGRAM", "")
+    year, professor, author, logo = env("YEAR", ""), env("PROFESSOR", ""), env("AUTHOR", ""), env("LOGO", "")
 
     width, height = A4
     c = canvas.Canvas(str(path), pagesize=A4)
@@ -49,25 +51,35 @@ def make_cover(path: Path, chapters: list[Path]) -> None:
         w = 220
         h = w * ih / iw
         c.drawImage(img, (width - w) / 2, y - h, w, h, mask="auto")
-        y -= h + 70
+        y -= h + 60
     else:
         if logo:
             print(f"warning: logo {logo} not found, cover without logo", file=sys.stderr)
         y -= 120
 
+    if program:                                  # degree programme above the title
+        c.setFont("Helvetica", 13)
+        c.drawCentredString(width / 2, y, program)
+        y -= 34
     c.setFont("Helvetica-Bold", 24)
     c.drawCentredString(width / 2, y, title)
-    y -= 30
-    if subtitle:
-        c.setFont("Helvetica", 14)
-        c.drawCentredString(width / 2, y, subtitle)
-        y -= 24
+    y -= 26
+    details = " · ".join(x for x in (code, f"A.Y. {year}" if year else "") if x)
+    if details:                                  # course code and academic year
+        c.setFont("Helvetica", 13)
+        c.drawCentredString(width / 2, y, details)
+        y -= 40
+    c.setFont("Helvetica", 12)
+    if professor:
+        c.drawCentredString(width / 2, y, f"Professor: {professor}")
+        y -= 18
     if author:
-        c.setFont("Helvetica-Oblique", 12)
-        c.drawCentredString(width / 2, y, author)
-        y -= 20
+        c.drawCentredString(width / 2, y, f"Notes by {author}")
+        y -= 18
+    c.setFont("Helvetica-Oblique", 10)
+    c.drawCentredString(width / 2, y - 4, "Personal study notes, not official course material")
+    y -= 60
 
-    y -= 50
     c.setFont("Helvetica-Bold", 13)
     c.drawString(90, y, "Contents")
     y -= 22
