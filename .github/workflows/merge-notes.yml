@@ -1,0 +1,51 @@
+# Merges every chapter PDF of the notes folder into a single PDF with a cover page,
+# and commits the result back to the repository.
+name: Merge notes
+
+on:
+  push:
+    paths:
+      - "notes/*.pdf"            # a chapter was added or updated
+      - "notes/logo.png"         # the cover logo changed
+      - "scripts/merge_notes.py"
+      - "!notes/merged/**"       # never react to the merged PDF itself
+  workflow_dispatch:             # "Run workflow" button in the Actions tab
+
+permissions:
+  contents: write                # needed to commit the merged PDF
+
+env:
+  NOTES_DIR: notes                              # folder with 01-…pdf, 02-…pdf, …
+  OUTPUT: notes/merged/embedded-os-notes.pdf    # merged PDF
+  LOGO: notes/logo.png                          # PNG or JPG for the cover (optional)
+  TITLE: "Embedded Operating Systems and Architecture"
+  SUBTITLE: "Personal notes · 01WMQWQ · A.Y. 2026/27"
+  AUTHOR: "Emanuele Tocci"
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PDF libraries
+        run: pip install pypdf==5.9.0 reportlab==4.4.10
+
+      - name: Merge the chapters
+        run: python scripts/merge_notes.py
+
+      - name: Commit the merged PDF
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add "$OUTPUT"
+          if git diff --cached --quiet; then
+            echo "Merged PDF unchanged, nothing to commit."
+          else
+            git commit -m "Merge notes into a single PDF [skip ci]"
+            git push
+          fi
