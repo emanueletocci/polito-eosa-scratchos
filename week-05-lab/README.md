@@ -100,7 +100,7 @@ make DEMO=cross
 ```
 
 `make run DEMO=<word>` builds and runs one. QEMU is stopped with
-`Ctrl-A` followed by `x`.
+`Ctrl-C`.
 
 The debugger needs two terminals: `make debug` in the first one, then in
 the second `arm-none-eabi-gdb build/scratch-os.axf` and
