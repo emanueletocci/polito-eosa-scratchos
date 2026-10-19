@@ -85,7 +85,7 @@ $(BUILD_DIR)/%.o: %.s
 $(BIN): $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJECTS) -o $(BIN)
 
-# Build, then run the image in QEMU. Quit with Ctrl-A then X.
+# Build, then run the image in QEMU. Quit with Ctrl-C.
 run: $(BIN)
 	$(QEMU)
 
