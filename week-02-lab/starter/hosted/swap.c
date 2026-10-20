@@ -16,16 +16,17 @@
 /* Supplied by newlib's semihosting library, and declared here because
  * it appears in no public header. It establishes the file descriptors
  * that stdio writes through. */
-extern void initialise_monitor_handles( void );
+extern void initialise_monitor_handles(void);
 
-/* TODO (A3, step 2): exchange the values *a and *b, in C. */
-void swap_c( int *a, int *b )
+void swap_c(int *a, int *b)
 {
-    (void) a;
-    (void) b;
+    int temp;
+    temp = *a;
+    *a = *b;
+    *b = temp;
 }
 
-/* TODO (A3, step 3): exchange the values *a and *b, in ARM assembly.
+/* (A3, step 3): exchange the values *a and *b, in ARM assembly.
  *
  * `naked` suppresses the compiler-generated prologue and epilogue, so
  * the body is exactly the instructions below and nothing else - which
@@ -34,29 +35,36 @@ void swap_c( int *a, int *b )
  *
  * The first argument arrives in r0 and the second in r1; r2 and r3 are
  * scratch registers you may use freely. */
-__attribute__( ( naked ) ) void swap_asm( int *a, int *b )
+
+// r0 = a  (indirizzo di x)
+// r1 = b  (indirizzo di y)
+__attribute__((naked)) void swap_asm(int *a, int *b)
 {
-    __asm__ volatile (
-        "bx  lr\n"      /* return; your instructions belong above this */
-    );
+    __asm__ volatile(
+        "ldr r2, [r0]\n" /* r2 = *a        */
+        "ldr r3, [r1]\n" /* r3 = *b        */
+        "str r3, [r0]\n" /* *a = r3        */
+        "str r2, [r1]\n" /* *b = r2        */
+        "bx  lr\n");
 }
 
-int main( void )
+int main(void)
 {
     int x, y;
 
-    /* TODO (A3, step 1): this program prints nothing as supplied.
-     * The lab states which single call is missing here. Add it. */
+    initialise_monitor_handles();
 
-    x = 1; y = 2;
-    printf( "C   before: x=%d y=%d\n", x, y );
-    swap_c( &x, &y );
-    printf( "C   after:  x=%d y=%d\n", x, y );
+    x = 1;
+    y = 2;
+    printf("C   before: x=%d y=%d\n", x, y);
+    swap_c(&x, &y);
+    printf("C   after:  x=%d y=%d\n", x, y);
 
-    x = 1; y = 2;
-    printf( "asm before: x=%d y=%d\n", x, y );
-    swap_asm( &x, &y );
-    printf( "asm after:  x=%d y=%d\n", x, y );
+    x = 1;
+    y = 2;
+    printf("asm before: x=%d y=%d\n", x, y);
+    swap_asm(&x, &y);
+    printf("asm after:  x=%d y=%d\n", x, y);
 
     return 0;
 }

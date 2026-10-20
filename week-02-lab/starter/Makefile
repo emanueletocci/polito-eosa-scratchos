@@ -39,7 +39,7 @@ LDFLAGS += -nostdlib -lgcc
 # ------------------------------------------------------------------------------
 
 # Le azioni: make esegue sempre la loro ricetta, senza cercare un file omonimo
-.PHONY: all run clean
+.PHONY: all run clean size disasm
 
 # Obiettivo predefinito: `make` senza argomenti costruisce l'immagine
 all: $(BIN)
@@ -57,6 +57,12 @@ clean:
 # Diagnostica: `make print-NOME` stampa il valore della variabile NOME (notes §6)
 print-%:
 	@echo "$* = $($*)"
+
+size: $(BIN)
+	arm-none-eabi-size $(BIN)
+
+disasm: $(BIN)
+	arm-none-eabi-objdump -d $(BIN)
 
 # ------------------------------------------------------------------------------
 # REGOLE DI COSTRUZIONE
