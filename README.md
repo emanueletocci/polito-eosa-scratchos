@@ -35,8 +35,8 @@ Requires the toolchain — see
 | `week-02/solution/` | Boot code written in pure assembly (`boot/startup.s`: vector table, reset handler, CPU setup), fault and SVC handlers, and a privileged → unprivileged demo |
 | `week-03/base/` and `week-03/solution/` | Layered mini-kernel (boot, kernel, drivers, lib, include, src); UART device driver (polled and interrupt-driven with ring buffer), 10 ms SysTick tick with uptime, kprintf (kernel) and printf (app), system calls (write, read, uptime) for unprivileged app |
 | `week-04/base/` and `week-04/solution/` | Two tasks (A, B) on their own process stacks (PSP) with a task table, launch and `exit`; per-task RAM partitions in the linker script (`mps2_m3.ld`); MPU region per task, `MemManage` fault with the faulting address, pointer check in `write`; misbehaving-task demos (`make run DEMO=rogue\|badptr\|overflow`) |
-| `week-05/` | Tick-driven cyclic-executive scheduler (3 tasks, hand-written context switch) |
-| *(none)* | Week 6 is theory-only (EDF/aperiodic/mixed/predictability) — `week-05/` stays current |
+| `week-05/base/` and `week-05/solution/` | Preemptive round-robin scheduler: SysTick counts the time slice (`QUANTUM`), the context switch runs in PendSV, an idle task, `yield` / `delay` / `delay_until` system calls; scheduler trace dump (`trace_dump`: switch log plus Gantt chart, readable by the `schedsim trace` tool); demos `make run DEMO=coop\|idle`, `make run QUANTUM=2` |
+| *(none)* | Week 6 is theory-only (EDF/aperiodic/mixed/predictability) — `week-05/solution/` stays current |
 | `week-07/` | Spinlock (`ldrex`/`strex`), fixing a real UART race observed in week 5 |
 
 **About the weekly folders:** a revised `week-NN/` folder holds two
@@ -44,7 +44,7 @@ folders, `base/` and `solution/`, rather than code directly. `base/` is the
 starting code the live coding begins from, and `solution/` is the complete
 solution built in class. Each has its own Makefile and builds on its own.
 `base/README.md` explains how the starting code was prepared, so you can
-understand the foundation before it is expanded in class. `week-02/`, `week-03/` and `week-04/` are
+understand the foundation before it is expanded in class. `week-02/`, `week-03/`, `week-04/` and `week-05/` are
 organized this way; the remaining weeks still hold their code at the top of
 `week-NN/`.
 

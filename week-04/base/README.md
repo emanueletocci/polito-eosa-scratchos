@@ -73,7 +73,7 @@ Build the image:
 make
 ```
 
-Run it under QEMU (quit with `Ctrl-A` then `x`):
+Run it under QEMU (quit with `Ctrl-C`):
 
 ```
 make run
