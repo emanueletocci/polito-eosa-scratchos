@@ -7,8 +7,7 @@
  * Tasks and the round-robin scheduler, kernel side: see kernel/task.h.
  *
  * Q7: the reference solution: the choice of the next task in
- * task_switch_context() is by fixed priority. The rest of this file is
- * the one of week-05/solution/.
+ * task_switch_context() is by fixed priority.
  *
  * All of this runs inside an exception, privileged, on the main stack:
  *   - task_start_first(), task_block_until(), task_finish_current():
@@ -99,7 +98,7 @@ static uint32_t quantum_left = QUANTUM;
  * idle period the turn goes on where it stopped. */
 static unsigned rr_last = 0;
 
-/* EXC_RETURN value (week 3): return to thread mode, on the process
+/* EXC_RETURN value: return to thread mode, on the process
  * stack (a task). */
 #define EXC_RETURN_THREAD_PSP 0xFFFFFFFDu
 

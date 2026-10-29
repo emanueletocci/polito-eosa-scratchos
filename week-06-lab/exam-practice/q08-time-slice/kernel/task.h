@@ -8,8 +8,8 @@
  * task table, and the code that decides which task runs next.
  *
  * A task always runs unprivileged, in thread mode, on its own stack
- * (the process stack, PSP), inside its own RAM partition. Since week 5
- * the tasks take turns on the CPU (preemptive round robin):
+ * (the process stack, PSP), inside its own RAM partition. The tasks
+ * take turns on the CPU (preemptive round robin):
  *   - SysTick counts the ticks and, when the running task has used up
  *     its time slice (QUANTUM ticks), asks for a switch;
  *   - a task can also give the CPU away itself: yield, delay, exit;

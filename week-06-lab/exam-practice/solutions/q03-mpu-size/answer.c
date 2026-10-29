@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 
-/* The fields of RASR for a data region (week 4, "Decoding RASR"). */
+/* The fields of RASR for a data region. */
 #define RASR_XN         0x10000000u     /* bit 28: no instruction fetch */
 #define RASR_AP_RW      0x03000000u     /* bits 26:24 = 011: read/write for all */
 #define RASR_AP_RO      0x06000000u     /* bits 26:24 = 110: read only for all */

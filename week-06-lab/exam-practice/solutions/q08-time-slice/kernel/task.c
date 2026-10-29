@@ -7,7 +7,6 @@
  * Tasks and the round-robin scheduler, kernel side: see kernel/task.h.
  *
  * Q8: the reference solution: each task has its own time slice.
- * The rest of this file is the one of week-05/solution/.
  *
  * All of this runs inside an exception, privileged, on the main stack:
  *   - task_start_first(), task_block_until(), task_finish_current():
@@ -98,7 +97,7 @@ static uint32_t quantum_left = QUANTUM;
  * idle period the turn goes on where it stopped. */
 static unsigned rr_last = 0;
 
-/* EXC_RETURN value (week 3): return to thread mode, on the process
+/* EXC_RETURN value: return to thread mode, on the process
  * stack (a task). */
 #define EXC_RETURN_THREAD_PSP 0xFFFFFFFDu
 

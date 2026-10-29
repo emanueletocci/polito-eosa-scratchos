@@ -7,8 +7,7 @@
  * Tasks and the round-robin scheduler, kernel side: see kernel/task.h.
  *
  * Q8: your answer is how long a task's time slice is: today every task
- * gets QUANTUM ticks. See STATEMENT.md. The rest of this file is the one
- * of week-05/solution/.
+ * gets QUANTUM ticks. See STATEMENT.md.
  *
  * All of this runs inside an exception, privileged, on the main stack:
  *   - task_start_first(), task_block_until(), task_finish_current():
@@ -99,7 +98,7 @@ static uint32_t quantum_left = QUANTUM;
  * idle period the turn goes on where it stopped. */
 static unsigned rr_last = 0;
 
-/* EXC_RETURN value (week 3): return to thread mode, on the process
+/* EXC_RETURN value: return to thread mode, on the process
  * stack (a task). */
 #define EXC_RETURN_THREAD_PSP 0xFFFFFFFDu
 
