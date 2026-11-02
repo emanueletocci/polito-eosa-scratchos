@@ -37,7 +37,7 @@ Requires the toolchain — see
 | `week-04/base/` and `week-04/solution/` | Two tasks (A, B) on their own process stacks (PSP) with a task table, launch and `exit`; per-task RAM partitions in the linker script (`mps2_m3.ld`); MPU region per task, `MemManage` fault with the faulting address, pointer check in `write`; misbehaving-task demos (`make run DEMO=rogue\|badptr\|overflow`) |
 | `week-05/base/` and `week-05/solution/` | Preemptive round-robin scheduler: SysTick counts the time slice (`QUANTUM`), the context switch runs in PendSV, an idle task, `yield` / `delay` / `delay_until` system calls; scheduler trace dump (`trace_dump`: switch log plus Gantt chart, readable by the `schedsim trace` tool); demos `make run DEMO=coop\|idle`, `make run QUANTUM=2` |
 | *(none)* | Week 6 is theory-only (EDF/aperiodic/mixed/predictability) — `week-05/solution/` stays current |
-| `week-07/` | Spinlock (`ldrex`/`strex`), fixing a real UART race observed in week 5 |
+| `week-07/base/` and `week-07/solution/` | Synchronization: a RAM region shared by the tasks (its own MPU region), two races (mixed output lines, a lost-update counter), and a spinlock written in assembly with `ldrex`/`strex`, plain and spin-then-yield |
 | [`project-base/`](project-base/) | Loader-project starting code with supplied task-lifecycle and recoverable-fault scaffolding, but no loader or shell solution |
 
 **About the weekly folders:** a revised `week-NN/` folder holds two
@@ -45,7 +45,7 @@ folders, `base/` and `solution/`, rather than code directly. `base/` is the
 starting code the live coding begins from, and `solution/` is the complete
 solution built in class. Each has its own Makefile and builds on its own.
 `base/README.md` explains how the starting code was prepared, so you can
-understand the foundation before it is expanded in class. `week-02/`, `week-03/`, `week-04/` and `week-05/` are
+understand the foundation before it is expanded in class. `week-02/`, `week-03/`, `week-04/`, `week-05/` and `week-07/` are
 organized this way; the remaining weeks still hold their code at the top of
 `week-NN/`.
 
