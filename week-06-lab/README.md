@@ -96,6 +96,16 @@ when it restarts, with the tick, and `trace_dump()` prints the trace;
 task B prints a `b_runs` value at every start, which is the evidence for
 what happens to a restarting task's variables.
 
+QEMU normally lets the board's clock follow the computer's: a tick is
+10 ms of real time, and how many instructions fit in it depends on how
+fast the computer is and what else it is doing. A tick can then fall
+while a task is printing, and from there on the tick numbers of one run
+differ from those of another. `make run-exact DEMO=<word>`
+adds `-icount shift=4,sleep=off`: QEMU counts board time in executed
+instructions, 16 ns per instruction, and never waits for the real clock,
+so a program prints the same tick numbers at every run. Use it whenever
+you compare tick numbers between runs.
+
 ---
 
 ## Part A — in the laboratory

@@ -28,8 +28,11 @@ stated file. Each observed value is also classified by what fixes it:
   linker's placement or on how the emulator behaves, so your value may
   differ; the relation the exercise asks about holds regardless.
 
-Tick numbers are counted from the scheduler's start and depend only on
-the work the tasks do, so they are the same on every run (this build).
+Tick numbers are counted from the scheduler's start. They were taken
+with `make run-exact`, in exact time, and are the same at every run
+(this build). With `make run` a tick can fall while a task is
+printing, and the tick numbers from that point on differ from those
+below; the relations the exercises ask about hold regardless.
 
 ---
 
@@ -37,7 +40,7 @@ the work the tasks do, so they are the same on every run (this build).
 
 ### A1. Exit means start again
 
-**The starter's first run.** `make run DEMO=restart` prints, among the
+**The starter's first run.** `make run-exact DEMO=restart` prints, among the
 lines of the two tasks,
 
 ```text
@@ -72,11 +75,11 @@ tcb_current->state = TASK_FINISHED;
 
 placed after the exit message. Its two runs differ.
 
-`make run DEMO=restart`: B prints `B: start, b_runs = 100` again after
+`make run-exact DEMO=restart`: B prints `B: start, b_runs = 100` again after
 every exit, as the task document asks. The restarts happen; the
 variables are fresh.
 
-`make run DEMO=restart-deep`: `B: start` is printed once. After tick 15,
+`make run-exact DEMO=restart-deep`: `B: start` is printed once. After tick 15,
 `task B exited` is printed again, at every time slice of B, and B never
 prints a second start (this build).
 
@@ -208,7 +211,7 @@ turns: B restarted at tick 15 and next at 29, a period of 14 ticks.
 
 `broken/no-data-reset/task.c` is `solution/kernel/task.c` without the
 line `partition_init( t );` in `task_restart`. With it in place,
-`make run DEMO=restart` prints:
+`make run-exact DEMO=restart` prints:
 
 ```text
 B: start, b_runs = 100

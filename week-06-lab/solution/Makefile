@@ -126,9 +126,14 @@ LDFLAGS += -nostdlib -lgcc
 # console, no window, UART0 connected to this terminal, our image as
 # the program. There is no semihosting: all output goes through the UART.
 QEMU := qemu-system-arm -machine mps2-an385 -monitor null -nographic -serial stdio -kernel $(BIN)
+# Exact time: QEMU counts time in executed instructions, 2^4 ns = 16 ns
+# of board time per instruction, and never waits for the host clock. A
+# tick then holds the same instructions at every run, on every computer,
+# so the ticks printed (and the trace) are the same at every run.
+EXACT := -icount shift=4,sleep=off
 
 # These targets are command names, not files on disk.
-.PHONY: all clean run debug run-trace
+.PHONY: all clean run run-exact debug run-trace
 
 # Default goal: build the image.
 all: $(BIN)
@@ -153,6 +158,10 @@ $(BIN): $(OBJECTS) scripts/mps2_m3.ld
 # Build, then run the image in QEMU. Quit with Ctrl-C.
 run: $(BIN)
 	$(QEMU)
+
+# Same as `run`, in exact time (see EXACT above).
+run-exact: $(BIN)
+	$(QEMU) $(EXACT)
 
 # Same as `run`, but paused for a debugger:
 #   -S             - freeze the emulated CPU at reset
