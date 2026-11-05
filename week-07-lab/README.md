@@ -102,8 +102,9 @@ arrives, and no waiting byte is lost.
   chose, and you can say why each edge was worth trying.
 - In Q3 the trace switches to the woken task at its wake tick, and
   nothing changes when the woken task does not outrank the running one.
-- In Q4, a key pressed while A runs is read by B at that tick, A ends at
-  tick 20 as if alone, and a full ring keeps the bytes it holds.
+- In Q4, a key pressed while A runs is read by B at that tick, A ends
+  around tick 20 as if alone, depending on the host machine workload,
+  and a full ring keeps the bytes it holds.
 
 ---
 

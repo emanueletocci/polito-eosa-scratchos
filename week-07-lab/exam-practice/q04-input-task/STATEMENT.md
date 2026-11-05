@@ -43,8 +43,9 @@ Nothing else in the file changes.
 
 ## Example
 
-A's work takes 20 ticks when A is alone. After your change, the run
-prints `task A exited (tick 20)` even though B, of higher priority, has
-been waiting for a key since the start. A key pressed while A runs is
+A's work takes around 20 ticks when A is alone. After your change, A
+exits around tick 20, depending on the host machine workload (an idle
+host prints `task A exited (tick 20)`), even though B, of higher
+priority, has been waiting for a key since the start. A key pressed while A runs is
 printed by B with the tick at which it arrived, and the trace has a
 switch from A to B at that same tick.
