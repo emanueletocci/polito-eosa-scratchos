@@ -31,7 +31,8 @@ are added here, counted over the whole document.
 Configuration comes from environment variables (set in the workflow):
   NOTES_DIR      folder with the parts and chapter PDFs  (default: notes)
   OUTPUT         path of the merged PDF                  (default: <NOTES_DIR>/merged/notes.pdf)
-  TOC_DEPTH      1 = chapters only, 2 = also sections, 3 = also subsections (default: 2)
+  TOC_DEPTH      deepest heading level of the chapters shown in the contents:
+                 0 = chapters only, 1 = h1, 2 = h1-h2, ..., 6 = h1-h6 (default: 6)
   LOGO           PNG or JPG logo for the cover           (optional)
   TITLE          course name, the cover title
   COURSE_CODE    course code, e.g. 01WMQWQ               (optional)
@@ -62,13 +63,19 @@ ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"]
 WIDTH, HEIGHT = A4
 MARGIN_X, MARGIN_TOP, MARGIN_BOTTOM = 72, 90, 72
 
-# Contents layout, per level: font, size, indent, space taken by the line.
-TOC_STYLE = {
-    0: ("Helvetica-Bold", 13, 0, 30),     # part
-    1: ("Helvetica-Bold", 11.5, 0, 20),   # chapter
-    2: ("Helvetica", 10.5, 26, 16),       # section
-    3: ("Helvetica", 9.5, 44, 14),        # subsection
-}
+
+def toc_style(level: int) -> tuple:
+    """Contents layout of a level: font, size, indent, space taken by the line.
+
+    Level 0 is a part, 1 a chapter, 2 an h1 of the chapter, ..., 7 an h6.
+    """
+    if level == 0:
+        return ("Helvetica-Bold", 13, 0, 30)
+    if level == 1:
+        return ("Helvetica-Bold", 11.5, 0, 20)
+    h = level - 1                                     # heading level, 1..6
+    size = max(10.5 - 0.5 * (h - 1), 8.5)
+    return ("Helvetica", size, 26 + 16 * (h - 1), size + 5.5)
 
 
 # --------------------------------------------------------------------------- titles
@@ -185,7 +192,7 @@ def toc_entries(parts: list, depth: int) -> list:
     entries = []
 
     def sections(ch, nodes, level):
-        if level > depth:
+        if level - 1 > depth:                         # level 2 = h1, ..., level 7 = h6
             return
         for n in nodes:
             entries.append((level, "", n["title"], lambda ch=ch, n=n: ch.start + n["page"]))
@@ -206,7 +213,7 @@ def paginate(entries: list) -> list:
     pages, current = [], []
     y = HEIGHT - MARGIN_TOP - 40                      # room for the "Contents" heading
     for e in entries:
-        step = TOC_STYLE[min(e[0], 3)][3]
+        step = toc_style(e[0])[3]
         if e[0] == 0 and current:
             y -= 8                                    # extra space before a part
         if y - step < MARGIN_BOTTOM:
@@ -237,7 +244,7 @@ def render_toc(pages: list) -> tuple[bytes, list]:
             c.setFont("Helvetica-Bold", 20)
             c.drawString(MARGIN_X, HEIGHT - MARGIN_TOP, "Contents")
         for (level, label, title, target), y in page:
-            font, size, indent, _ = TOC_STYLE[min(level, 3)]
+            font, size, indent, _ = toc_style(level)
             number = str(target() + 1)
             x = MARGIN_X + indent
             c.setFont(font, size)
@@ -371,7 +378,7 @@ def add_bookmarks(writer: PdfWriter, parts: list) -> None:
 def main() -> None:
     notes = Path(os.environ.get("NOTES_DIR", "notes"))
     output = Path(os.environ.get("OUTPUT", notes / "merged" / "notes.pdf"))
-    depth = int(os.environ.get("TOC_DEPTH", "2"))
+    depth = int(os.environ.get("TOC_DEPTH", "6"))
 
     parts = discover(notes, output)
     if not any(p.chapters for p in parts):
