@@ -1,82 +1,155 @@
-# Week 7 lab — scheduling, part 2, solo
+# Week 7 laboratory — examination practice on scheduling
 
-Covers week 6's topic (EDF, aperiodic/sporadic, mixed, predictability),
-per the lab-lag rule: the lab is held during week 7 and extends the
-work done in week 6. No new code this week either; this is
-schedulability analysis, on paper.
+Laboratory 7 is practice for the examination. Its goal is that you
+solve, unaided, questions of the kind the examination sets: every
+exercise is written in the form, and at the length, of an examination
+question. It is a bank of seven such questions on week 6's topic, the
+scheduling of periodic tasks: the utilisation bound of Rate Monotonic,
+response-time analysis, the earliest-due-date rule, and what a kernel
+must do so that a task of high priority runs when it should. Each
+question states what is required, gives the signatures or the files to
+write, and leaves the rest to you. Part A is for the
+assisted session; Part B is for work you carry out independently
+afterwards. The last question of each part is a composite: it joins
+several of the ideas of the course in one program, and is the longest.
+
+## Objectives
+
+On completion you will have:
+
+- computed, in integer C, the utilisation of a task set, the verdict of
+  the Liu and Layland test, and the response times of response-time
+  analysis;
+- scheduled jobs by earliest due date and computed their maximum
+  lateness;
+- changed the week 5 kernel so that a task of higher priority that
+  becomes ready runs at once, and so that a task waiting for input does
+  not hold the processor;
+- completed the receive interrupt handler of a console and the wait of
+  a task for its bytes, from a statement of behaviour alone;
+- read a scheduler trace in C, and made the kernel record the deadlines
+  its tasks miss, checked against `schedsim`;
+- compared each answer with a reference solution, after your own
+  attempt.
 
 ## Starting point
 
-Still `week-05/` — week 6 is theory-only and adds no code, so there is
-no `week-06/` folder and no newer checkpoint to start from. This is the
-second lab in a row to build on `week-05/`.
+[`../week-05/solution/`](../week-05/solution/), the finished week 5
+operating system, for the questions that change the kernel (Q3, Q4,
+Q7): each of them lays its own files over a copy of it, so the folder
+itself is never modified. The other questions are C functions that run
+alone. Every question is in [`exam-practice/`](exam-practice/); read
+[`exam-practice/README.md`](exam-practice/README.md) first: it says
+what you write in each question and how to try it.
 
-```sh
-cd week-05
-```
+The kernel questions build on the week 5 kernel with a fixed-priority
+choice of the next task, given in their `kernel/task.c`. If you wrote
+your own priority scheduler in week 6, you may use it instead of the
+given one in a copy of the folder: compare the two first.
 
-## Task
+## Structure
 
-Working alone, no code required (a text file with your answers is
-fine). Each question lists what a complete answer contains — that's the
-checkpoint.
+The questions are independent of each other: none needs the answer of
+another, and they can be done in any order, although Part A is ordered
+from paper to kernel. Nothing is handed in, and nothing in the folders
+checks an answer: the reference solution of each question is in
+[`exam-practice/solutions/`](exam-practice/solutions/), to be read after
+your own attempt. Deciding whether your code is right, by trying the
+edges as well as the examples, is part of each question.
 
-### 1. Utilization and the two standard tests
+Two conventions hold for every question:
 
-Given four periodic tasks ($D_i = T_i$):
+- **State what you expect before you run.** For a function, the value it
+  must return on the cases you choose; for the kernel, the lines it must
+  print and at which tick. When the result differs, you have learned
+  something about your model, not only about your code.
+- **A trace is evidence.** The kernel questions are judged on what the
+  kernel prints: the switches of the trace, with their ticks, and the
+  lines of the tasks. Read them against the statement, tick by tick.
 
-| Task | $C_i$ (ms) | $T_i$ (ms) |
-|---|---|---|
-| A | 1 | 5 |
-| B | 2 | 8 |
-| C | 1 | 10 |
-| D | 2 | 20 |
+---
 
-1. Compute $U$ (show the fractions and the sum).
-2. RMS sufficient test: state the $n=4$ bound and whether $U$ clears it.
-3. EDF: schedulable? State the exact condition you're using.
+## Part A — in the laboratory
 
-**Complete answer:** three numbers ($U$, the bound, yes/no each) with
-the arithmetic shown.
+### Q1. The utilisation bound
 
-### 2. When the sufficient test can't decide
+[`exam-practice/q01-ll-bound/`](exam-practice/q01-ll-bound/): the
+utilisation of a task set in thousandths, and the verdict of the Liu
+and Layland test with the bound of the course.
 
-Same set. If step 1's RMS bound test is inconclusive (or even if it
-isn't), run **response-time analysis** for the lowest-priority task (D):
-iterate $R = C_D + \sum_{j \in hp(D)} \lceil R/T_j \rceil C_j$ to a
-fixed point.
+### Q2. Response-time analysis
 
-**Complete answer:** the iteration written out line by line, the fixed
-point $R_D$, and the verdict $R_D \le D_D$.
+[`exam-practice/q02-rta/`](exam-practice/q02-rta/): the interference of
+the tasks of higher priority, the response time as a fixed point, and
+whether the whole set is schedulable.
 
-### 3. Reclassify one task as sporadic
+### Q3. A higher priority that cannot wait
 
-Pick one task and make it **sporadic**: same $C_i$, but $T_i$ is now a
-*minimum* inter-arrival time, not a fixed period.
+[`exam-practice/q03-wake-preempt/`](exam-practice/q03-wake-preempt/):
+the kernel switches to a task of higher priority at the tick at which it
+wakes, not at the end of the running task's time slice.
 
-1. Does your EDF argument from step 1 still hold? Why / why not?
-2. Does the RMS analysis from step 2 change?
+### Q4. A task that waits for input
 
-**Complete answer:** a yes/no with a one-paragraph justification for
-each of the two sub-questions.
+[`exam-practice/q04-input-task/`](exam-practice/q04-input-task/), a
+composite: the gaps of an interrupt-driven console input, so that the
+reading task waits without the processor, runs at the tick its byte
+arrives, and no waiting byte is lost.
 
-### 4. An overload case
+### Done looks like — Part A
 
-Construct a 3-task set with $U > 1$. Sketch the EDF timeline over the
-first hyperperiod-ish window.
+- Q1 and Q2 give the values of their examples and of the edges you
+  chose, and you can say why each edge was worth trying.
+- In Q3 the trace switches to the woken task at its wake tick, and
+  nothing changes when the woken task does not outrank the running one.
+- In Q4, a key pressed while A runs is read by B at that tick, A ends
+  around tick 20 as if alone, depending on the host machine workload,
+  and a full ring keeps the bytes it holds.
 
-**Complete answer:** the task set, the timeline, and a sentence naming
-which job misses first and why later jobs then cascade.
+---
 
-### 5. Classify `scratch-os`'s own dispatcher
+## Part B — independent practice
 
-Looking at `week-05/`'s actual `scheduler_pick_next` + `SysTick_Handler`:
+### Q5. Earliest due date
 
-**Complete answer:** which of RMS / EDF / cyclic-executive / "none"
-it is, justified with this week's vocabulary, plus the worst-case
-ready-to-running latency in terms of the SysTick period.
+[`exam-practice/q05-edd/`](exam-practice/q05-edd/): the next job by
+earliest due date, the finish time of a job, and the maximum lateness.
 
-## Done looks like
+### Q6. Reading a trace
 
-- Worked answers to all five questions with the reasoning shown (not
-  just the final yes/no), each meeting its "complete answer" bar.
+[`exam-practice/q06-trace-read/`](exam-practice/q06-trace-read/), a
+composite: from the switch records of a trace, the run time of a task,
+the response time of a job, the first deadline miss, and whether the
+schedule obeys Rate Monotonic.
+
+### Q7. A deadline monitor
+
+[`exam-practice/q07-deadline-monitor/`](exam-practice/q07-deadline-monitor/),
+a composite: the kernel records the deadlines its periodic tasks miss,
+and the first one agrees with `schedsim`.
+
+### Done looks like — Part B
+
+- You have written, from the statement alone, the answers of the
+  questions you chose, and tried each one on the edges as well as on the
+  examples.
+- You have read the reference solution of each, after your attempt, and
+  can say where it differs from yours and whether that matters.
+
+---
+
+## After the bank
+
+The questions of this bank meet in two places, and the solutions say
+where.
+
+- **Analysis and kernel answer the same question.** Q2 and Q6 compute,
+  from the task set or from the trace, whether every deadline is met; Q7
+  makes the kernel answer it while it runs. For the set of Q7 the three
+  agree on the first miss, and where they could disagree, the statement
+  of Q7 says why.
+- **A handler and a task share data.** In Q4 the receive interrupt
+  handler fills the buffer and the system call empties it. The reference
+  solution explains why, with the priorities the statement gives, the
+  two never interleave, and what could happen with others. Read that
+  comment after your attempt.

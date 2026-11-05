@@ -604,8 +604,10 @@ and `TIMER1_Handler`'s first line is `entry = SysTick->VAL;`, with
 `entry` a `volatile uint32_t`. The handler needs no acknowledge: the
 device line is low, so the pending bit clears on entry. SysTick counts
 down, hence `before - entry`. One run printed 650, 75, 25, 25, 25
-(**this build**; the numbers change from run to run, the pattern does
-not). The first is larger because QEMU translates the code the first
-time it runs; the rest come in coarse steps because the emulated clock
+(**this build**; the numbers change from run to run). In most runs the
+first is the largest; an occasional run prints 0, where both reads
+returned the same value, or a later value larger than its neighbours.
+The first is larger because QEMU translates the code the first time it
+runs; the rest come in coarse steps because the emulated clock
 moves in steps, not per instruction. A real Cortex-M3 takes 12 cycles
 from the pend to the first instruction of the handler.
