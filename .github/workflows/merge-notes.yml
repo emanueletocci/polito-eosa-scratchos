@@ -57,3 +57,17 @@ jobs:
             git commit -m "Merge notes into a single PDF [skip ci]"
             git push
           fi
+
+      - name: Publish the merged PDF as a release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: notes-latest                              # one release, updated at every run
+        run: |
+          NOTES="Latest version of the notes, generated on $(date -u +'%d/%m/%Y %H:%M') UTC from commit ${GITHUB_SHA::7}."
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release edit "$TAG" --notes "$NOTES"
+          else
+            gh release create "$TAG" --title "$TITLE – notes" --notes "$NOTES" --latest
+          fi
+          gh release upload "$TAG" "$OUTPUT" --clobber    # replace the PDF of the previous run
