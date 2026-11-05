@@ -21,7 +21,7 @@ permissions:
 env:
   NOTES_DIR: docs/notes                                # folder with one subfolder per part
   OUTPUT: docs/notes/merged/embedded-os-notes.pdf      # merged PDF
-  TOC_DEPTH: "2"                                       # 1 chapters, 2 + sections, 3 + subsections
+  TOC_DEPTH: "6"                                       # deepest heading in the contents: 0 chapters only, 1-6 = h1-h6
   LOGO: docs/notes/logo.png                            # PNG or JPG for the cover (optional)
   TITLE: "Embedded Operating Systems and Architecture"
   COURSE_CODE: "01WMQWQ"
